@@ -149,6 +149,19 @@
 
     .section:last-child { border-bottom: 0; padding-bottom: 0; }
 
+    .section-content {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section.is-collapsed {
+      gap: 0;
+    }
+
+    .section.is-collapsed > .section-content {
+      display: none;
+    }
+
     .section-title {
       display: flex;
       align-items: center;
@@ -158,6 +171,33 @@
       font-weight: 900;
       letter-spacing: 0.16em;
       text-transform: uppercase;
+    }
+
+    .section-toggle {
+      min-width: 48px;
+      height: 28px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: rgba(246,242,232,0.82);
+      padding: 0 9px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .section-toggle::after {
+      content: "隠す";
+    }
+
+    .section.is-collapsed .section-toggle::after {
+      content: "表示";
+    }
+
+    .section-toggle:hover {
+      border-color: rgba(255,255,255,0.42);
+      background: rgba(255,255,255,0.13);
     }
 
     .field { display: grid; gap: 7px; }
@@ -1573,22 +1613,58 @@
 
     @media (max-width: 620px) {
       .app {
-        width: min(100vw - 20px, 520px);
-        padding: 10px 0;
+        width: min(100vw - 14px, 520px);
+        padding: 8px 0;
+        gap: 10px;
       }
 
       .toolbar {
         align-items: stretch;
         flex-direction: column;
+        gap: 10px;
+        padding: 12px;
       }
 
+      .brand span { font-size: 11px; }
       .actions { justify-content: stretch; }
-      .primary-button { flex: 1; }
+      .icon-button, .primary-button { min-height: 46px; }
+      .primary-button { flex: 1; justify-content: center; }
       .two { grid-template-columns: 1fr; }
-      .stage { padding: 12px; }
-      .cover { width: 100%; }
+      .stage { padding: 10px; }
+      .cover-wrap { width: 100%; gap: 10px; }
+      .cover { width: min(100%, 46vh); }
+      .controls {
+        padding: 10px;
+        gap: 10px;
+      }
+      .section {
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.045);
+      }
+      .section:last-child { padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+      .section-title { font-size: 12px; letter-spacing: 0.1em; }
+      .section-toggle { height: 34px; min-width: 58px; }
+      input[type="text"], select, textarea, input[type="file"] {
+        min-height: 48px;
+        font-size: 16px;
+      }
+      textarea { min-height: 104px; }
+      .chip { height: 38px; padding: 0 13px; }
+      .job-chip { min-height: 36px; padding: 0 13px; }
+      .color-grid { grid-template-columns: 1fr; }
+      .color-control { grid-template-columns: 1fr 52px; min-height: 48px; }
+      .size-control {
+        grid-template-columns: 1fr 72px;
+        gap: 8px;
+      }
+      .size-control span {
+        grid-column: 1 / -1;
+      }
+      .image-thumb { width: 64px; height: 84px; }
       .cover-mid { grid-template-columns: 1fr 1fr; }
-      .range-row { grid-template-columns: 72px 1fr 48px; }
+      .range-row { grid-template-columns: 58px 1fr 48px; }
     }
   </style>
 </head>
@@ -2305,6 +2381,43 @@
       renderImageStrip();
     }
 
+    function setupCollapsibleSections() {
+      const isMobile = window.matchMedia("(max-width: 620px)").matches;
+      document.querySelectorAll(".controls .section").forEach((section, index) => {
+        const header = section.firstElementChild;
+        const title = section.querySelector(".section-title");
+        if (!header || !title || section.querySelector(":scope > .section-content")) return;
+
+        const content = document.createElement("div");
+        content.className = "section-content";
+        Array.from(section.children).forEach((child) => {
+          if (child !== header) content.appendChild(child);
+        });
+        section.appendChild(content);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "section-toggle";
+        button.setAttribute("aria-label", "この項目を隠す");
+        button.setAttribute("aria-expanded", "true");
+        title.appendChild(button);
+
+        const setCollapsed = (collapsed) => {
+          section.classList.toggle("is-collapsed", collapsed);
+          button.setAttribute("aria-expanded", String(!collapsed));
+          button.setAttribute("aria-label", collapsed ? "この項目を表示" : "この項目を隠す");
+        };
+
+        button.addEventListener("click", () => setCollapsed(!section.classList.contains("is-collapsed")));
+        title.addEventListener("click", (event) => {
+          if (event.target === button) return;
+          setCollapsed(!section.classList.contains("is-collapsed"));
+        });
+
+        if (isMobile && index > 1) setCollapsed(true);
+      });
+    }
+
     ["magazineInput", "archiveInput", "nameInput", "worldInput", "issueInput", "subtitleInput", "quoteInput"].forEach((id) => {
       $(id).addEventListener("input", syncProfile);
     });
@@ -2490,6 +2603,7 @@
     });
 
     renderPalettes();
+    setupCollapsibleSections();
     renderStyleOptions();
     applyCoverStyle($("styleSelect").value);
     renderMainJobSelect();
