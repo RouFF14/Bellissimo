@@ -6,7 +6,7 @@
   <title>Aether Cover Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bebas+Neue&family=Bodoni+Moda:wght@500;700;900&family=Caveat:wght@600;700&family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:wght@600;700&family=Delius&family=Hachi+Maru+Pop&family=Inter:wght@400;500;600;700;800&family=Kosugi+Maru&family=Libre+Baskerville:wght@700&family=Lobster&family=M+PLUS+Rounded+1c:wght@500;700;900&family=Noto+Serif+JP:wght@500;700;900&family=Orbitron:wght@700;900&family=Oswald:wght@600;700&family=Pacifico&family=Playfair+Display:wght@700;900&family=Quicksand:wght@600;700&family=Rajdhani:wght@700&family=Yomogi&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
@@ -242,6 +242,7 @@
     }
 
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .two > .primary-button:only-child { grid-column: 1 / -1; }
 
     .chip-grid {
       display: flex;
@@ -265,6 +266,24 @@
       color: #101116;
       border-color: transparent;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .toggle-chip {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 11px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.07);
+      color: rgba(246, 242, 232, 0.82);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .toggle-chip input {
+      accent-color: var(--accent);
     }
 
     .image-strip {
@@ -559,14 +578,20 @@
       display: block;
     }
 
+    .cover.has-logo.logo-dark .cover-logo {
+      filter: invert(1) drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+      mix-blend-mode: screen;
+    }
+
     .placeholder-art {
       position: absolute;
       inset: 0;
       z-index: 1;
       background:
-        radial-gradient(ellipse at 55% 22%, rgba(255, 255, 255, 0.52) 0 4%, transparent 14%),
-        radial-gradient(ellipse at 50% 48%, rgba(245, 231, 205, 0.32) 0 16%, transparent 37%),
-        linear-gradient(150deg, #24242c 0%, #35414a 42%, #17191f 100%);
+        radial-gradient(ellipse at 53% 20%, rgba(255,255,255,0.5) 0 4%, transparent 13%),
+        radial-gradient(ellipse at 50% 42%, rgba(255, 79, 123, 0.24) 0 16%, transparent 38%),
+        radial-gradient(ellipse at 48% 58%, rgba(55, 213, 197, 0.18) 0 22%, transparent 46%),
+        linear-gradient(145deg, #191a21 0%, #33404a 48%, #101116 100%);
     }
 
     .placeholder-art::before {
@@ -577,9 +602,9 @@
       width: 54%;
       height: 74%;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.16), transparent 18%),
-        linear-gradient(145deg, rgba(255, 79, 123, 0.35), rgba(55, 213, 197, 0.2));
-      clip-path: polygon(50% 0, 78% 19%, 85% 58%, 64% 100%, 32% 100%, 12% 58%, 20% 19%);
+        linear-gradient(180deg, rgba(255,255,255,0.22), transparent 20%),
+        linear-gradient(145deg, rgba(255, 79, 123, 0.42), rgba(55, 213, 197, 0.22));
+      clip-path: polygon(50% 0, 75% 18%, 88% 56%, 70% 100%, 30% 100%, 12% 56%, 25% 18%);
       filter: blur(0.2px);
       opacity: 0.82;
     }
@@ -1606,6 +1631,32 @@
       text-align: right;
     }
 
+    .cover .masthead h1 {
+      font-family: var(--title-font-family, Cinzel, "Noto Serif JP", serif) !important;
+    }
+
+    .cover .name {
+      font-family: var(--name-font-family, Cinzel, "Noto Serif JP", serif) !important;
+    }
+
+    .cover .kicker,
+    .cover .date-line,
+    .cover .topics,
+    .cover .topics span,
+    .cover .role-label,
+    .cover .job-name,
+    .cover .sub-jobs,
+    .cover .quote,
+    .cover .subtitle,
+    .cover .meta,
+    .cover .fineprint {
+      font-family: var(--body-font-family, "Noto Serif JP", Inter, serif) !important;
+    }
+
+    .is-cover-hidden {
+      display: none !important;
+    }
+
     .status {
       color: var(--muted);
       font-size: 12px;
@@ -1802,6 +1853,17 @@
             <option value="assets/logos/bellissimo-logo-10.webp">10 ブラック</option>
           </select>
         </div>
+        <div class="field">
+          <label for="logoPresetSelect">配置プリセット</label>
+          <select id="logoPresetSelect">
+            <option value="">自由調整</option>
+            <option value="top">上中央</option>
+            <option value="bottom">下中央</option>
+            <option value="rightBottom">右下スタンプ</option>
+            <option value="leftBottom">左下スタンプ</option>
+            <option value="watermark">中央透かし</option>
+          </select>
+        </div>
         <div class="range-row">
           <span>大きさ</span>
           <input id="logoSizeRange" type="range" min="12" max="90" step="1" value="34">
@@ -1821,6 +1883,63 @@
           <span>透明度</span>
           <input id="logoOpacityRange" type="range" min="0.1" max="1" step="0.05" value="0.9">
           <span id="logoOpacityValue">90%</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">フォント</div>
+        <div class="field">
+          <label for="titleFontSelect">表紙タイトル</label>
+          <select id="titleFontSelect">
+            <optgroup label="カッコいい系">
+              <option value="Cinzel, 'Noto Serif JP', serif">Cinzel</option>
+              <option value="'Bebas Neue', 'Noto Serif JP', sans-serif">Bebas Neue</option>
+              <option value="Anton, 'Noto Serif JP', sans-serif">Anton</option>
+              <option value="'Archivo Black', 'Noto Serif JP', sans-serif">Archivo Black</option>
+              <option value="Oswald, 'Noto Serif JP', sans-serif">Oswald</option>
+              <option value="Orbitron, 'Noto Serif JP', sans-serif">Orbitron</option>
+              <option value="Rajdhani, 'Noto Serif JP', sans-serif">Rajdhani</option>
+              <option value="'Playfair Display', 'Noto Serif JP', serif">Playfair Display</option>
+              <option value="'Bodoni Moda', 'Noto Serif JP', serif">Bodoni Moda</option>
+              <option value="'Libre Baskerville', 'Noto Serif JP', serif">Libre Baskerville</option>
+            </optgroup>
+            <optgroup label="かわいい系">
+              <option value="Pacifico, 'Noto Serif JP', cursive">Pacifico</option>
+              <option value="Lobster, 'Noto Serif JP', cursive">Lobster</option>
+              <option value="Caveat, 'Noto Serif JP', cursive">Caveat</option>
+              <option value="Yomogi, 'Noto Serif JP', cursive">Yomogi</option>
+              <option value="'M PLUS Rounded 1c', sans-serif">M PLUS Rounded</option>
+              <option value="'Kosugi Maru', sans-serif">Kosugi Maru</option>
+              <option value="'Hachi Maru Pop', cursive">Hachi Maru Pop</option>
+              <option value="'Zen Maru Gothic', sans-serif">Zen Maru Gothic</option>
+              <option value="Delius, 'Noto Serif JP', cursive">Delius</option>
+              <option value="Quicksand, 'Noto Serif JP', sans-serif">Quicksand</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label for="nameFontSelect">名前</label>
+          <select id="nameFontSelect"></select>
+        </div>
+        <div class="field">
+          <label for="bodyFontSelect">本文・ジョブ・トピック</label>
+          <select id="bodyFontSelect"></select>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">表紙の表示項目</div>
+        <div class="chip-grid visibility-grid">
+          <label class="toggle-chip"><input type="checkbox" id="showIssue" checked>発行情報</label>
+          <label class="toggle-chip"><input type="checkbox" id="showMagazine" checked>表紙タイトル</label>
+          <label class="toggle-chip"><input type="checkbox" id="showArchive" checked>サブタイトル</label>
+          <label class="toggle-chip"><input type="checkbox" id="showTopics" checked>トピック</label>
+          <label class="toggle-chip"><input type="checkbox" id="showJob" checked>ジョブ欄</label>
+          <label class="toggle-chip"><input type="checkbox" id="showHeadline" checked>キャッチコピー</label>
+          <label class="toggle-chip"><input type="checkbox" id="showName" checked>名前</label>
+          <label class="toggle-chip"><input type="checkbox" id="showMeta" checked>ワールド</label>
+          <label class="toggle-chip"><input type="checkbox" id="showCopyright" checked>権利表記</label>
+          <label class="toggle-chip"><input type="checkbox" id="showLogo" checked>ロゴ</label>
         </div>
       </section>
 
@@ -1996,6 +2115,44 @@
         </div>
       </section>
 
+      <section class="section">
+        <div class="section-title">書き出し</div>
+        <div class="field">
+          <label for="exportQualitySelect">保存品質</label>
+          <select id="exportQualitySelect">
+            <option value="1">軽量 / 1x</option>
+            <option value="2">標準 / 2x</option>
+            <option value="3" selected>高画質 / 3x</option>
+            <option value="4">最高画質 / 4x</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">保存 / 共有</div>
+        <div class="two">
+          <button class="primary-button" id="savePresetBtn" type="button">設定保存</button>
+          <button class="primary-button" id="loadPresetBtn" type="button">設定読込</button>
+        </div>
+        <div class="two">
+          <button class="primary-button" id="copyPresetBtn" type="button">JSONコピー</button>
+          <button class="primary-button" id="copyUrlBtn" type="button">URLコピー</button>
+        </div>
+        <div class="two">
+          <button class="primary-button" id="applyPresetBtn" type="button">JSON反映</button>
+        </div>
+        <div class="field">
+          <label for="presetData">共有用JSON</label>
+          <textarea id="presetData" placeholder="JSONコピーした設定をここに貼って反映できます"></textarea>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">使い方</div>
+        <div class="hint">画像を選び、スタイル・文字・色・フォントを調整してPNG保存します。表紙の表示項目は個別にON/OFFできます。</div>
+        <div class="hint">設定保存はこのブラウザ内に残ります。JSONコピーは別端末や別ブラウザへ設定を渡す時に使えます。</div>
+      </section>
+
     </aside>
 
     <section class="panel stage">
@@ -2158,6 +2315,26 @@
     let currentImageIndex = -1;
     let imageState = { x: 0, y: 0, scale: 1, rotate: 0 };
     const logoState = { x: 50, y: 16, size: 34, opacity: 0.9 };
+    const presetStorageKey = "bellissimo-cover-preset-v1";
+    const visibilityTargets = {
+      showIssue: ["#issueOutput"],
+      showMagazine: ["#magazineOutput"],
+      showArchive: ["#archiveOutput"],
+      showTopics: ["#topicsOutput"],
+      showJob: [".side-copy"],
+      showHeadline: ["#subtitleOutput"],
+      showName: ["#nameOutput"],
+      showMeta: [".meta"],
+      showCopyright: [".fineprint"],
+      showLogo: ["#coverLogo"]
+    };
+    const logoPresets = {
+      top: { x: 50, y: 16, size: 34, opacity: 0.9 },
+      bottom: { x: 50, y: 82, size: 32, opacity: 0.9 },
+      rightBottom: { x: 78, y: 82, size: 24, opacity: 0.86 },
+      leftBottom: { x: 22, y: 82, size: 24, opacity: 0.86 },
+      watermark: { x: 50, y: 50, size: 78, opacity: 0.25 }
+    };
     let drag = null;
 
     function setText(inputId, outputId) {
@@ -2448,9 +2625,11 @@
       if (src) {
         coverLogo.src = src;
         cover.classList.add("has-logo");
+        cover.classList.toggle("logo-dark", /bellissimo-logo-(04|09|10)\.webp$/.test(src));
       } else {
         coverLogo.removeAttribute("src");
         cover.classList.remove("has-logo");
+        cover.classList.remove("logo-dark");
       }
       root.style.setProperty("--logo-x", `${logoState.x}%`);
       root.style.setProperty("--logo-y", `${logoState.y}%`);
@@ -2464,6 +2643,130 @@
       $("logoYValue").textContent = `${Math.round(logoState.y)}%`;
       $("logoSizeValue").textContent = `${Math.round(logoState.size)}%`;
       $("logoOpacityValue").textContent = `${Math.round(logoState.opacity * 100)}%`;
+      applyVisibility();
+    }
+
+    function setupFontSelects() {
+      ["nameFontSelect", "bodyFontSelect"].forEach((id) => {
+        $(id).innerHTML = $("titleFontSelect").innerHTML;
+      });
+      $("nameFontSelect").value = "Cinzel, 'Noto Serif JP', serif";
+      $("bodyFontSelect").value = "'M PLUS Rounded 1c', sans-serif";
+      applyFonts();
+    }
+
+    function applyFonts() {
+      root.style.setProperty("--title-font-family", $("titleFontSelect").value);
+      root.style.setProperty("--name-font-family", $("nameFontSelect").value);
+      root.style.setProperty("--body-font-family", $("bodyFontSelect").value);
+    }
+
+    function applyVisibility() {
+      Object.entries(visibilityTargets).forEach(([id, selectors]) => {
+        const visible = $(id).checked;
+        selectors.forEach((selector) => {
+          document.querySelectorAll(selector).forEach((element) => {
+            element.classList.toggle("is-cover-hidden", !visible);
+          });
+        });
+      });
+    }
+
+    function collectPreset() {
+      const textInputs = ["magazineInput", "archiveInput", "nameInput", "worldInput", "issueInput", "subtitleInput", "quoteInput"];
+      const colors = Object.fromEntries(Object.keys(textColorControls).map((id) => [id, $(id).value]));
+      const sizes = Object.fromEntries(Object.keys(textSizeControls).map((key) => [key, $(`${key}Number`).value]));
+      const visibility = Object.fromEntries(Object.keys(visibilityTargets).map((id) => [id, $(id).checked]));
+      return {
+        version: 1,
+        text: Object.fromEntries(textInputs.map((id) => [id, $(id).value])),
+        styleCategory: currentStyleCategory,
+        style: $("styleSelect").value,
+        fit: $("fitSelect").value,
+        theme: $("themeSelect").value,
+        filter: $("filterSelect").value,
+        mainJob: selectedMainJob,
+        subJobs: selectedSubJobs,
+        topics: selectedTopics,
+        jobEnglish: $("jobEnglishToggle").checked,
+        imageState,
+        colors,
+        sizes,
+        fonts: {
+          title: $("titleFontSelect").value,
+          name: $("nameFontSelect").value,
+          body: $("bodyFontSelect").value
+        },
+        logo: {
+          src: $("logoSelect").value,
+          preset: $("logoPresetSelect").value,
+          ...logoState
+        },
+        visibility,
+        exportQuality: $("exportQualitySelect").value
+      };
+    }
+
+    function applyPreset(data) {
+      if (!data || typeof data !== "object") return;
+      Object.entries(data.text || {}).forEach(([id, value]) => { if ($(id)) $(id).value = value; });
+      if (data.styleCategory && coverStyles[data.styleCategory]) {
+        currentStyleCategory = data.styleCategory;
+        $("styleCategorySelect").value = data.styleCategory;
+        renderStyleOptions();
+      }
+      if (data.style && Array.from($("styleSelect").options).some((option) => option.value === data.style)) {
+        $("styleSelect").value = data.style;
+      }
+      if (data.fit) $("fitSelect").value = data.fit;
+      if (data.theme) $("themeSelect").value = data.theme;
+      if (data.filter) $("filterSelect").value = data.filter;
+      if (data.mainJob !== undefined) selectedMainJob = data.mainJob;
+      if (Array.isArray(data.subJobs)) selectedSubJobs = data.subJobs;
+      if (Array.isArray(data.topics)) selectedTopics = data.topics;
+      if (typeof data.jobEnglish === "boolean") $("jobEnglishToggle").checked = data.jobEnglish;
+      if (data.imageState) imageState = { ...imageState, ...data.imageState };
+      Object.entries(data.colors || {}).forEach(([id, value]) => { if ($(id)) $(id).value = value; });
+      Object.entries(data.sizes || {}).forEach(([key, value]) => { if ($(`${key}Number`)) setTextSize(key, value); });
+      if (data.fonts) {
+        if (data.fonts.title) $("titleFontSelect").value = data.fonts.title;
+        if (data.fonts.name) $("nameFontSelect").value = data.fonts.name;
+        if (data.fonts.body) $("bodyFontSelect").value = data.fonts.body;
+      }
+      if (data.logo) {
+        if (data.logo.src !== undefined) $("logoSelect").value = data.logo.src;
+        if (data.logo.preset !== undefined) $("logoPresetSelect").value = data.logo.preset;
+        ["x", "y", "size", "opacity"].forEach((key) => {
+          if (data.logo[key] !== undefined) logoState[key] = Number(data.logo[key]);
+        });
+      }
+      Object.entries(data.visibility || {}).forEach(([id, checked]) => { if ($(id)) $(id).checked = Boolean(checked); });
+      if (data.exportQuality) $("exportQualitySelect").value = data.exportQuality;
+      cover.style.setProperty("--img-fit", $("fitSelect").value);
+      cover.style.setProperty("--img-filter", $("filterSelect").value);
+      applyCoverStyle($("styleSelect").value, false);
+      renderMainJobSelect();
+      renderSubJobs();
+      renderTopics();
+      syncTopics();
+      syncProfile();
+      applyTextColors();
+      applyTextSizes();
+      applyFonts();
+      syncLogo();
+      syncImage();
+    }
+
+    function presetJson() {
+      return JSON.stringify(collectPreset(), null, 2);
+    }
+
+    function encodePreset(data) {
+      return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    }
+
+    function decodePreset(text) {
+      return JSON.parse(decodeURIComponent(escape(atob(text))));
     }
 
     function setupCollapsibleSections() {
@@ -2571,24 +2874,91 @@
 
     $("logoSelect").addEventListener("change", syncLogo);
 
+    $("logoPresetSelect").addEventListener("change", (event) => {
+      const preset = logoPresets[event.target.value];
+      if (!preset) return;
+      Object.assign(logoState, preset);
+      syncLogo();
+    });
+
     $("logoSizeRange").addEventListener("input", (event) => {
       logoState.size = Number(event.target.value);
+      $("logoPresetSelect").value = "";
       syncLogo();
     });
 
     $("logoXRange").addEventListener("input", (event) => {
       logoState.x = Number(event.target.value);
+      $("logoPresetSelect").value = "";
       syncLogo();
     });
 
     $("logoYRange").addEventListener("input", (event) => {
       logoState.y = Number(event.target.value);
+      $("logoPresetSelect").value = "";
       syncLogo();
     });
 
     $("logoOpacityRange").addEventListener("input", (event) => {
       logoState.opacity = Number(event.target.value);
+      $("logoPresetSelect").value = "";
       syncLogo();
+    });
+
+    ["titleFontSelect", "nameFontSelect", "bodyFontSelect"].forEach((id) => {
+      $(id).addEventListener("change", applyFonts);
+    });
+
+    Object.keys(visibilityTargets).forEach((id) => {
+      $(id).addEventListener("change", applyVisibility);
+    });
+
+    $("savePresetBtn").addEventListener("click", () => {
+      localStorage.setItem(presetStorageKey, presetJson());
+      setStatus("設定を保存しました");
+    });
+
+    $("loadPresetBtn").addEventListener("click", () => {
+      const saved = localStorage.getItem(presetStorageKey);
+      if (!saved) {
+        setStatus("保存済み設定がありません");
+        return;
+      }
+      applyPreset(JSON.parse(saved));
+      setStatus("設定を読み込みました");
+    });
+
+    $("copyPresetBtn").addEventListener("click", async () => {
+      const json = presetJson();
+      $("presetData").value = json;
+      try {
+        await navigator.clipboard.writeText(json);
+        setStatus("設定JSONをコピーしました");
+      } catch {
+        setStatus("設定JSONを表示しました");
+      }
+    });
+
+    $("copyUrlBtn").addEventListener("click", async () => {
+      const url = `${location.origin}${location.pathname}#preset=${encodePreset(collectPreset())}`;
+      $("presetData").value = url;
+      try {
+        await navigator.clipboard.writeText(url);
+        setStatus("設定URLをコピーしました");
+      } catch {
+        setStatus("設定URLを表示しました");
+      }
+    });
+
+    $("applyPresetBtn").addEventListener("click", () => {
+      try {
+        const text = $("presetData").value.trim();
+        const data = text.includes("#preset=") ? decodePreset(text.split("#preset=")[1]) : JSON.parse(text);
+        applyPreset(data);
+        setStatus("JSON設定を反映しました");
+      } catch {
+        setStatus("JSONを読み込めませんでした");
+      }
     });
 
     $("imageInput").addEventListener("change", (event) => {
@@ -2682,7 +3052,7 @@
         syncImage();
         await document.fonts.ready;
         const canvas = await html2canvas(cover, {
-          scale: 3,
+          scale: Number($("exportQualitySelect").value || 3),
           backgroundColor: null,
           useCORS: true,
           logging: false
@@ -2711,6 +3081,7 @@
 
     renderPalettes();
     setupCollapsibleSections();
+    setupFontSelects();
     renderStyleOptions();
     applyCoverStyle($("styleSelect").value);
     renderMainJobSelect();
@@ -2721,7 +3092,16 @@
     applyTextColors();
     applyTextSizes();
     syncLogo();
+    applyVisibility();
     syncImage();
+    if (location.hash.startsWith("#preset=")) {
+      try {
+        applyPreset(decodePreset(location.hash.slice(8)));
+        setStatus("共有設定を読み込みました");
+      } catch {
+        setStatus("共有設定を読み込めませんでした");
+      }
+    }
   </script>
 </body>
 </html>
