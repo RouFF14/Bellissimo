@@ -1,0 +1,2470 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aether Cover Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #111318;
+      --panel: rgba(249, 250, 252, 0.08);
+      --panel-strong: rgba(255, 255, 255, 0.12);
+      --line: rgba(255, 255, 255, 0.15);
+      --ink: #f6f2e8;
+      --muted: rgba(246, 242, 232, 0.66);
+      --paper: #ece7dd;
+      --accent: #ff4f7b;
+      --accent-2: #37d5c5;
+      --cover-text: #fff8ed;
+      --shadow: 0 22px 80px rgba(0, 0, 0, 0.42);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 4%, rgba(255, 79, 123, 0.22), transparent 28rem),
+        radial-gradient(circle at 88% 16%, rgba(55, 213, 197, 0.18), transparent 26rem),
+        linear-gradient(135deg, #101116 0%, #181923 48%, #0f1516 100%);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .app {
+      width: min(1480px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0;
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) minmax(360px, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .toolbar {
+      grid-column: 1 / -1;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      background: rgba(17, 19, 24, 0.7);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .brand strong {
+      font-family: Cinzel, serif;
+      font-size: clamp(22px, 3vw, 36px);
+      line-height: 1;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-button, .primary-button {
+      height: 42px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--panel);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 14px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .icon-button {
+      width: 42px;
+      padding: 0;
+    }
+
+    .primary-button {
+      border-color: rgba(255, 255, 255, 0.32);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #101116;
+      font-weight: 900;
+    }
+
+    .icon-button:hover, .primary-button:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.48); }
+    .icon-button svg, .primary-button svg { width: 18px; height: 18px; stroke-width: 2.2; }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(16, 17, 22, 0.74);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+      max-height: calc(100vh - 126px);
+      overflow: auto;
+      scrollbar-color: rgba(255,255,255,0.28) transparent;
+    }
+
+    .section {
+      display: grid;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .field { display: grid; gap: 7px; }
+
+    label {
+      color: rgba(246, 242, 232, 0.78);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      outline: 0;
+      padding: 10px 12px;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 76px;
+      line-height: 1.5;
+    }
+
+    select option { background: #15171d; color: var(--ink); }
+
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: rgba(255, 255, 255, 0.42);
+      background: rgba(255, 255, 255, 0.11);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      min-height: 46px;
+      border: 1px dashed rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px;
+      color: var(--muted);
+    }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .chip-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.07);
+      color: rgba(246, 242, 232, 0.78);
+      height: 32px;
+      padding: 0 11px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .chip.is-active {
+      color: #101116;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .image-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      min-height: 78px;
+      padding-bottom: 2px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      padding: 8px;
+    }
+
+    .image-strip:empty::before {
+      content: "複数画像を選択すると、ここにサムネイルが並びます";
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      align-self: center;
+    }
+
+    .image-thumb {
+      width: 54px;
+      height: 70px;
+      flex: 0 0 auto;
+      border: 2px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.07);
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .image-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-thumb.is-active { border-color: var(--accent); }
+
+    .hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .color-control {
+      display: grid;
+      grid-template-columns: 1fr 40px;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .color-control span {
+      color: rgba(246, 242, 232, 0.78);
+      font-size: 12px;
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    .color-control input[type="color"] {
+      width: 40px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .size-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .size-control {
+      display: grid;
+      grid-template-columns: 92px 1fr 64px;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .size-control span {
+      color: rgba(246, 242, 232, 0.78);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .size-control input[type="number"] {
+      width: 64px;
+      min-height: 30px;
+      padding: 4px 6px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: var(--ink);
+      text-align: right;
+    }
+
+    .job-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .language-toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .job-board {
+      display: grid;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .job-role {
+      display: grid;
+      gap: 8px;
+    }
+
+    .job-role-title {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: none;
+    }
+
+    .job-chip-grid {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .sub-jobs {
+      color: rgba(255,255,255,0.72);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      line-height: 1.45;
+      text-transform: none;
+    }
+
+    .palette-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .swatch {
+      width: 36px;
+      height: 36px;
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      background: var(--swatch);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .swatch.is-active { border-color: #fff; }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 52px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .range-row span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .stage {
+      min-height: calc(100vh - 126px);
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      position: sticky;
+      top: 24px;
+    }
+
+    .cover-wrap {
+      width: min(640px, 100%);
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+    }
+
+    .cover {
+      --fit-scale: 1;
+      width: min(540px, 82vw);
+      aspect-ratio: 9 / 13;
+      position: relative;
+      overflow: hidden;
+      color: var(--cover-text);
+      background:
+        linear-gradient(150deg, rgba(255, 79, 123, 0.34), transparent 34%),
+        linear-gradient(330deg, rgba(55, 213, 197, 0.28), transparent 36%),
+        #2a2c33;
+      box-shadow: 0 32px 110px rgba(0, 0, 0, 0.56);
+      user-select: none;
+      touch-action: none;
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.52), transparent 34%, transparent 68%, rgba(0,0,0,0.36)),
+        linear-gradient(180deg, rgba(0,0,0,0.36), transparent 34%, rgba(0,0,0,0.7));
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .cover::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid var(--accent);
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    #coverImage {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: var(--img-render-width, auto);
+      height: var(--img-render-height, auto);
+      max-width: none;
+      max-height: none;
+      transform: translate(calc(-50% + var(--img-x, 0px)), calc(-50% + var(--img-y, 0px))) rotate(var(--img-rotate, 0deg)) scale(var(--img-scale, 1));
+      transform-origin: center;
+      filter: var(--img-filter, saturate(1.08) contrast(1.02));
+      z-index: 1;
+      display: none;
+    }
+
+    .placeholder-art {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse at 55% 22%, rgba(255, 255, 255, 0.52) 0 4%, transparent 14%),
+        radial-gradient(ellipse at 50% 48%, rgba(245, 231, 205, 0.32) 0 16%, transparent 37%),
+        linear-gradient(150deg, #24242c 0%, #35414a 42%, #17191f 100%);
+    }
+
+    .placeholder-art::before {
+      content: "";
+      position: absolute;
+      left: 22%;
+      top: 13%;
+      width: 54%;
+      height: 74%;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.16), transparent 18%),
+        linear-gradient(145deg, rgba(255, 79, 123, 0.35), rgba(55, 213, 197, 0.2));
+      clip-path: polygon(50% 0, 78% 19%, 85% 58%, 64% 100%, 32% 100%, 12% 58%, 20% 19%);
+      filter: blur(0.2px);
+      opacity: 0.82;
+    }
+
+    .cover-content {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      padding: clamp(20px, 5%, 34px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      text-shadow: 0 3px 18px rgba(0, 0, 0, 0.56);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .cover.style-simple {
+      --accent: #d7bf6a;
+    }
+
+    .cover.style-simple::before {
+      background: linear-gradient(90deg, rgba(0,0,0,0.34), transparent 55%), linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.44));
+    }
+
+    .cover.style-simple::after {
+      inset: auto 9% 41% 36%;
+      height: 52px;
+      border: 4px solid var(--accent);
+      opacity: 0.58;
+    }
+
+    .cover.style-simple .cover-content {
+      padding: 44px 50px 38px;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .cover.style-simple .masthead {
+      text-align: left;
+      border: 0;
+      gap: 16px;
+    }
+
+    .cover.style-simple .masthead h1 {
+      font-family: Inter, sans-serif;
+      font-size: var(--title-font-size, 82px);
+      font-weight: 800;
+      line-height: 1.08;
+      max-width: 58%;
+    }
+
+    .cover.style-simple .cover-mid {
+      grid-template-columns: 38% 1fr;
+      align-items: end;
+      padding-top: 40px;
+    }
+
+    .cover.style-simple .topics span {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-size: var(--topic-font-size, 16px);
+    }
+
+    .cover.style-simple .bottom {
+      justify-items: end;
+      text-align: right;
+      padding-right: 5%;
+    }
+
+    .cover.style-leon {
+      --accent: #c96a4d;
+    }
+
+    .cover.style-leon::before {
+      background: linear-gradient(180deg, rgba(0,0,0,0.4), transparent 34%, rgba(0,0,0,0.5));
+    }
+
+    .cover.style-leon::after { display: none; }
+
+    .cover.style-leon .cover-content {
+      padding: 22px 24px 28px;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .cover.style-leon .masthead {
+      border: 0;
+      text-align: left;
+    }
+
+    .cover.style-leon .masthead h1 {
+      color: var(--accent);
+      font-family: Inter, sans-serif;
+      font-size: var(--title-font-size, 82px);
+      font-weight: 900;
+      line-height: 0.82;
+      max-width: 92%;
+    }
+
+    .cover.style-leon .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: center;
+    }
+
+    .cover.style-leon .side-copy {
+      justify-self: start;
+      text-align: left;
+      max-width: 60%;
+    }
+
+    .cover.style-leon .bottom {
+      max-width: 82%;
+    }
+
+    .cover.style-leon .name {
+      font-family: "Noto Serif JP", Inter, sans-serif;
+      font-weight: 900;
+      color: #fff;
+      font-size: var(--name-font-size, 76px);
+    }
+
+    .cover.style-leon .subtitle {
+      color: var(--accent);
+      font-size: var(--headline-font-size, 18px);
+      line-height: 0.95;
+    }
+
+    .cover.style-fashion {
+      background: #eee7cf;
+      color: #c35d37;
+      --cover-text: #c35d37;
+      --accent: #c35d37;
+    }
+
+    .cover.style-fashion::before,
+    .cover.style-fashion::after {
+      display: none;
+    }
+
+    .cover.style-fashion .cover-content {
+      padding: 24px 30px 24px;
+      color: #c35d37;
+      text-shadow: none;
+    }
+
+    .cover.style-fashion .masthead {
+      border: 0;
+      text-align: center;
+    }
+
+    .cover.style-fashion .masthead h1 {
+      font-size: var(--title-font-size, 82px);
+      line-height: 1.08;
+    }
+
+    .cover.style-fashion .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: start;
+      padding-top: 22px;
+    }
+
+    .cover.style-fashion .topics span {
+      color: #9c4a30;
+      background: rgba(238,231,207,0.72);
+      border-left: 0;
+      font-size: var(--topic-font-size, 14px);
+    }
+
+    .cover.style-fashion .side-copy {
+      justify-self: end;
+      text-align: right;
+      color: #9c4a30;
+      text-shadow: none;
+    }
+
+    .cover.style-fashion .bottom {
+      text-align: center;
+      color: #c35d37;
+      text-shadow: none;
+    }
+
+    .cover.style-gq {
+      --accent: #f2ef45;
+    }
+
+    .cover.style-gq::before {
+      background: linear-gradient(90deg, rgba(0,0,0,0.34), transparent 58%), linear-gradient(180deg, transparent 36%, rgba(0,0,0,0.52));
+    }
+
+    .cover.style-gq::after { display: none; }
+
+    .cover.style-gq .cover-content {
+      padding: 18px 24px 22px;
+    }
+
+    .cover.style-gq .masthead {
+      border: 0;
+      text-align: left;
+      color: var(--accent);
+    }
+
+    .cover.style-gq .masthead h1 {
+      font-family: Inter, sans-serif;
+      font-size: var(--title-font-size, 82px);
+      font-weight: 900;
+      line-height: 0.78;
+      letter-spacing: -0.02em;
+      max-width: 96%;
+    }
+
+    .cover.style-gq .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: start;
+      justify-items: end;
+      text-align: right;
+      padding-top: 4px;
+    }
+
+    .cover.style-gq .topics {
+      justify-self: end;
+      text-align: right;
+    }
+
+    .cover.style-gq .topics span {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: #fff;
+    }
+
+    .cover.style-gq .side-copy {
+      justify-self: start;
+      align-self: end;
+      text-align: left;
+      max-width: 52%;
+    }
+
+    .cover.style-gq .subtitle { color: var(--accent); }
+
+    .cover.style-minimal {
+      --accent: #d44836;
+    }
+
+    .cover.style-minimal::before {
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 28%, rgba(0,0,0,0.28));
+    }
+
+    .cover.style-minimal::after { display: none; }
+
+    .cover.style-minimal .cover-content {
+      padding: 48px 32px 30px;
+    }
+
+    .cover.style-minimal .masthead {
+      border: 0;
+      text-align: center;
+      color: #111;
+      text-shadow: 0 1px 12px rgba(255,255,255,0.6);
+    }
+
+    .cover.style-minimal .masthead h1 {
+      font-size: var(--title-font-size, 82px);
+      line-height: 1.05;
+      letter-spacing: 0.18em;
+    }
+
+    .cover.style-minimal .cover-mid {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+
+    .cover.style-minimal .topics span {
+      background: rgba(212,72,54,0.92);
+      border: 0;
+      color: #fff;
+    }
+
+    .cover.style-minimal .side-copy {
+      justify-self: end;
+      text-align: center;
+      max-width: 150px;
+    }
+
+    .cover.style-minimal .job-name {
+      writing-mode: vertical-rl;
+      font-size: var(--job-font-size, 32px);
+      line-height: 1.2;
+    }
+
+    .cover.style-ladies-cover {
+      --accent: #e86f95;
+    }
+
+    .cover.style-ladies-cover::before {
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 34%, rgba(38,14,22,0.54));
+    }
+
+    .cover.style-ladies-cover::after {
+      inset: 22px;
+      border-color: rgba(255,255,255,0.56);
+    }
+
+    .cover.style-ladies-cover .cover-content {
+      padding: 34px 38px 34px;
+      text-align: center;
+    }
+
+    .cover.style-ladies-cover .masthead {
+      border: 0;
+      gap: 10px;
+    }
+
+    .cover.style-ladies-cover .masthead h1 {
+      font-family: "Noto Serif JP", Cinzel, serif;
+      font-weight: 700;
+      line-height: 1.02;
+    }
+
+    .cover.style-ladies-cover .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: start;
+      justify-items: start;
+      padding-top: 30px;
+    }
+
+    .cover.style-ladies-cover .topics span {
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      color: #6c2b3f;
+      padding: 6px 13px;
+    }
+
+    .cover.style-beauty {
+      background: #f7ecef;
+      --cover-text: #4b2d35;
+      --accent: #d76f8f;
+    }
+
+    .cover.style-beauty::before {
+      background: linear-gradient(90deg, rgba(255,255,255,0.48), transparent 50%), linear-gradient(180deg, transparent 50%, rgba(255,232,239,0.72));
+    }
+
+    .cover.style-beauty::after { display: none; }
+
+    .cover.style-beauty .cover-content {
+      padding: 30px 34px 30px;
+      color: #4b2d35;
+      text-shadow: 0 1px 12px rgba(255,255,255,0.55);
+    }
+
+    .cover.style-beauty .masthead {
+      border: 0;
+      text-align: left;
+    }
+
+    .cover.style-beauty .masthead h1 {
+      font-family: "Noto Serif JP", serif;
+      font-weight: 900;
+      line-height: 0.96;
+    }
+
+    .cover.style-beauty .cover-mid {
+      grid-template-columns: 1fr 42%;
+      align-items: end;
+    }
+
+    .cover.style-beauty .side-copy {
+      justify-self: end;
+      text-align: right;
+      padding: 14px;
+      background: rgba(255,255,255,0.58);
+    }
+
+    .cover.style-soft {
+      --accent: #c9a46b;
+    }
+
+    .cover.style-soft::before {
+      background: linear-gradient(180deg, rgba(255,248,235,0.34), transparent 38%, rgba(56,41,28,0.44));
+    }
+
+    .cover.style-soft::after {
+      inset: 34px;
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .cover.style-soft .cover-content {
+      padding: 44px 42px 36px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.36);
+    }
+
+    .cover.style-soft .masthead {
+      border: 0;
+      text-align: center;
+    }
+
+    .cover.style-soft .masthead h1 {
+      font-family: Cinzel, "Noto Serif JP", serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+    }
+
+    .cover.style-soft .topics {
+      justify-self: end;
+      text-align: right;
+    }
+
+    .cover.style-soft .topics span {
+      background: rgba(255,255,255,0.42);
+      border: 0;
+      color: #fff;
+    }
+
+    .cover.style-luxe {
+      --accent: #e2c36f;
+    }
+
+    .cover.style-luxe::before {
+      background: radial-gradient(circle at 50% 24%, rgba(255,255,255,0.16), transparent 28%), linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.66));
+    }
+
+    .cover.style-luxe::after {
+      inset: 18px;
+      border: 2px solid var(--accent);
+      opacity: 0.9;
+    }
+
+    .cover.style-luxe .cover-content {
+      padding: 26px 30px 32px;
+    }
+
+    .cover.style-luxe .masthead {
+      border: 0;
+      text-align: center;
+    }
+
+    .cover.style-luxe .masthead h1 {
+      font-family: Cinzel, serif;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .cover.style-luxe .cover-mid {
+      grid-template-columns: 34% 1fr;
+    }
+
+    .cover.style-luxe .side-copy {
+      justify-self: end;
+      text-align: right;
+      max-width: 190px;
+    }
+
+    .cover.style-cute {
+      background: #ffeef5;
+      --cover-text: #e44b87;
+      --accent: #ff8ebb;
+    }
+
+    .cover.style-cute::before {
+      background: radial-gradient(circle at 18% 20%, rgba(255,255,255,0.8), transparent 16%), radial-gradient(circle at 84% 34%, rgba(255,255,255,0.5), transparent 18%), linear-gradient(180deg, transparent 40%, rgba(255,228,240,0.84));
+    }
+
+    .cover.style-cute::after {
+      inset: 18px;
+      border: 3px solid rgba(255,255,255,0.72);
+      border-radius: 18px;
+    }
+
+    .cover.style-cute .cover-content {
+      padding: 30px;
+      text-shadow: 0 1px 10px rgba(255,255,255,0.7);
+    }
+
+    .cover.style-cute .masthead {
+      border: 0;
+      text-align: left;
+    }
+
+    .cover.style-cute .masthead h1 {
+      font-family: "Noto Serif JP", serif;
+      font-weight: 900;
+    }
+
+    .cover.style-cute .topics span {
+      border: 0;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.78);
+      color: #d43f7a;
+    }
+
+    .cover.style-cute .bottom {
+      text-align: right;
+    }
+
+    .cover.style-mode {
+      --accent: #ffffff;
+    }
+
+    .cover.style-mode::before {
+      background: linear-gradient(90deg, rgba(0,0,0,0.62), transparent 38%), linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.72));
+    }
+
+    .cover.style-mode::after { display: none; }
+
+    .cover.style-mode .cover-content {
+      padding: 40px 34px 30px;
+    }
+
+    .cover.style-mode .masthead {
+      border: 0;
+      text-align: left;
+    }
+
+    .cover.style-mode .masthead h1 {
+      font-family: Inter, "Noto Serif JP", sans-serif;
+      font-weight: 300;
+      line-height: 0.95;
+      letter-spacing: 0.16em;
+    }
+
+    .cover.style-mode .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: end;
+    }
+
+    .cover.style-mode .topics {
+      justify-self: start;
+    }
+
+    .cover.style-mode .topics span {
+      background: transparent;
+      border-left: 1px solid #fff;
+      padding-left: 12px;
+    }
+
+    .cover.style-mode .side-copy {
+      justify-self: start;
+      text-align: left;
+      max-width: 230px;
+    }
+
+    .cover[class*=" variant-"] .cover-content {
+      padding: var(--variant-padding, clamp(20px, 5%, 34px));
+    }
+
+    .cover.variant-01 { --variant-padding: 28px 32px 30px; }
+    .cover.variant-02 { --variant-padding: 42px 34px 34px; }
+    .cover.variant-03 { --variant-padding: 22px 46px 36px; }
+    .cover.variant-04 { --variant-padding: 54px 28px 28px; }
+    .cover.variant-05 { --variant-padding: 30px 54px 42px; }
+
+    .cover.variant-06 .masthead,
+    .cover.variant-12 .masthead,
+    .cover.variant-18 .masthead,
+    .cover.variant-24 .masthead,
+    .cover.variant-30 .masthead {
+      text-align: right;
+    }
+
+    .cover.variant-07 .masthead,
+    .cover.variant-13 .masthead,
+    .cover.variant-19 .masthead,
+    .cover.variant-25 .masthead {
+      text-align: left;
+      border-bottom-style: dashed;
+    }
+
+    .cover.variant-08 .cover-mid,
+    .cover.variant-14 .cover-mid,
+    .cover.variant-20 .cover-mid,
+    .cover.variant-26 .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: start;
+      justify-items: end;
+      text-align: right;
+    }
+
+    .cover.variant-08 .side-copy,
+    .cover.variant-14 .side-copy,
+    .cover.variant-20 .side-copy,
+    .cover.variant-26 .side-copy {
+      justify-self: end;
+      width: min(36%, 210px);
+      margin-right: 0;
+      text-align: right;
+    }
+
+    .cover.variant-09 .cover-mid,
+    .cover.variant-15 .cover-mid,
+    .cover.variant-21 .cover-mid,
+    .cover.variant-27 .cover-mid {
+      grid-template-columns: 1fr;
+      align-items: center;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .cover.variant-09 .side-copy,
+    .cover.variant-15 .side-copy,
+    .cover.variant-21 .side-copy,
+    .cover.variant-27 .side-copy {
+      justify-self: start;
+      width: min(42%, 230px);
+      text-align: left;
+    }
+
+    .cover.variant-10 .side-copy,
+    .cover.variant-16 .side-copy,
+    .cover.variant-22 .side-copy,
+    .cover.variant-28 .side-copy {
+      justify-self: center;
+      align-self: center;
+      text-align: center;
+      width: min(54%, 280px);
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    .cover.variant-11 .bottom,
+    .cover.variant-17 .bottom,
+    .cover.variant-23 .bottom,
+    .cover.variant-29 .bottom {
+      text-align: right;
+      justify-items: end;
+    }
+
+    .cover.variant-12 .bottom,
+    .cover.variant-18 .bottom,
+    .cover.variant-24 .bottom,
+    .cover.variant-30 .bottom {
+      text-align: center;
+      justify-items: center;
+    }
+
+    .cover.variant-13 .topics,
+    .cover.variant-19 .topics,
+    .cover.variant-25 .topics {
+      align-self: end;
+    }
+
+    .cover.variant-14 .topics span,
+    .cover.variant-20 .topics span,
+    .cover.variant-26 .topics span {
+      border-left: 0;
+      border-bottom: 3px solid var(--accent);
+    }
+
+    .cover.variant-15 .topics span,
+    .cover.variant-21 .topics span,
+    .cover.variant-27 .topics span {
+      border-left-width: 6px;
+      background: rgba(0,0,0,0.42);
+    }
+
+    .cover.variant-16::after,
+    .cover.variant-22::after,
+    .cover.variant-28::after {
+      inset: 28px;
+      opacity: 0.45;
+    }
+
+    .cover.variant-17 .name,
+    .cover.variant-23 .name,
+    .cover.variant-29 .name {
+      letter-spacing: 0.08em;
+    }
+
+    .cover.style-ladies-cover.variant-01 .masthead { text-align: center; }
+    .cover.style-ladies-cover.variant-01 .cover-mid { grid-template-columns: 40% 1fr; align-items: end; }
+    .cover.style-ladies-cover.variant-01 .side-copy { justify-self: end; text-align: right; max-width: 210px; }
+    .cover.style-ladies-cover.variant-07 .masthead { text-align: left; border-bottom-style: dotted; }
+    .cover.style-ladies-cover.variant-07 .masthead h1 { font-style: italic; }
+    .cover.style-ladies-cover.variant-07 .cover-mid { grid-template-columns: 1fr; align-items: center; }
+    .cover.style-ladies-cover.variant-07 .side-copy { justify-self: start; text-align: left; width: min(58%, 260px); }
+    .cover.style-ladies-cover.variant-13 .masthead { text-align: right; border-bottom: 0; }
+    .cover.style-ladies-cover.variant-13 .cover-mid { grid-template-columns: 1fr 36%; align-items: start; }
+    .cover.style-ladies-cover.variant-13 .topics { justify-self: start; }
+    .cover.style-ladies-cover.variant-13 .side-copy { justify-self: end; text-align: right; }
+    .cover.style-ladies-cover.variant-19 .masthead { text-align: left; }
+    .cover.style-ladies-cover.variant-19 .cover-mid { grid-template-columns: 1fr; align-items: end; justify-items: end; }
+    .cover.style-ladies-cover.variant-19 .side-copy { text-align: center; width: min(48%, 230px); padding: 12px 14px; background: rgba(255,255,255,0.18); }
+    .cover.style-ladies-cover.variant-25 .masthead { text-align: center; border: 1px solid var(--accent); padding: 12px; }
+    .cover.style-ladies-cover.variant-25 .cover-mid { grid-template-columns: 34% 1fr; align-items: center; }
+    .cover.style-ladies-cover.variant-25 .bottom { text-align: center; justify-items: center; }
+
+    .cover.style-beauty.variant-02 .masthead { text-align: left; }
+    .cover.style-beauty.variant-02 .topics { align-self: start; }
+    .cover.style-beauty.variant-02 .side-copy { justify-self: end; text-align: right; max-width: 190px; }
+    .cover.style-beauty.variant-08 .masthead { text-align: center; border-bottom-width: 2px; }
+    .cover.style-beauty.variant-08 .cover-mid { grid-template-columns: 1fr; align-items: start; justify-items: end; }
+    .cover.style-beauty.variant-08 .side-copy { text-align: right; width: min(44%, 230px); }
+    .cover.style-beauty.variant-14 .masthead { text-align: right; }
+    .cover.style-beauty.variant-14 .cover-mid { grid-template-columns: 44% 1fr; align-items: end; }
+    .cover.style-beauty.variant-14 .bottom { text-align: left; }
+    .cover.style-beauty.variant-20 .masthead { text-align: left; border-bottom: 0; }
+    .cover.style-beauty.variant-20 .cover-mid { grid-template-columns: 1fr; align-items: center; justify-items: start; }
+    .cover.style-beauty.variant-20 .topics span { background: rgba(255,255,255,0.8); }
+    .cover.style-beauty.variant-26 .masthead { text-align: center; }
+    .cover.style-beauty.variant-26 .cover-mid { grid-template-columns: 38% 1fr; align-items: center; }
+    .cover.style-beauty.variant-26 .bottom { text-align: right; justify-items: end; }
+
+    .cover.style-soft.variant-03 .masthead { text-align: center; }
+    .cover.style-soft.variant-03 .cover-mid { grid-template-columns: 1fr; align-items: start; justify-items: center; }
+    .cover.style-soft.variant-03 .side-copy { text-align: center; width: min(62%, 280px); }
+    .cover.style-soft.variant-09 .masthead { text-align: left; border-bottom: 0; }
+    .cover.style-soft.variant-09 .cover-mid { grid-template-columns: 36% 1fr; align-items: end; }
+    .cover.style-soft.variant-09 .bottom { text-align: left; }
+    .cover.style-soft.variant-15 .masthead { text-align: right; }
+    .cover.style-soft.variant-15 .cover-mid { grid-template-columns: 1fr; align-items: center; justify-items: end; }
+    .cover.style-soft.variant-15 .side-copy { text-align: right; width: min(46%, 230px); }
+    .cover.style-soft.variant-21 .masthead { text-align: center; border-bottom-style: dashed; }
+    .cover.style-soft.variant-21 .cover-mid { grid-template-columns: 1fr 32%; align-items: start; }
+    .cover.style-soft.variant-21 .topics { justify-self: end; }
+    .cover.style-soft.variant-27 .masthead { text-align: left; }
+    .cover.style-soft.variant-27 .cover-mid { grid-template-columns: 1fr; align-items: end; justify-items: start; }
+    .cover.style-soft.variant-27 .bottom { text-align: center; justify-items: center; }
+
+    .cover.style-luxe.variant-04 .masthead { text-align: center; border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); padding-top: 12px; }
+    .cover.style-luxe.variant-04 .cover-mid { grid-template-columns: 34% 1fr; align-items: end; }
+    .cover.style-luxe.variant-10 .masthead { text-align: left; border-bottom: 0; }
+    .cover.style-luxe.variant-10 .cover-mid { grid-template-columns: 1fr; align-items: center; justify-items: end; }
+    .cover.style-luxe.variant-10 .side-copy { text-align: right; width: min(42%, 220px); }
+    .cover.style-luxe.variant-16 .masthead { text-align: right; }
+    .cover.style-luxe.variant-16 .cover-mid { grid-template-columns: 40% 1fr; align-items: start; }
+    .cover.style-luxe.variant-16 .topics span { border-left-width: 1px; border-bottom: 2px solid var(--accent); }
+    .cover.style-luxe.variant-22 .masthead { text-align: center; }
+    .cover.style-luxe.variant-22 .cover-mid { grid-template-columns: 1fr; align-items: end; justify-items: center; }
+    .cover.style-luxe.variant-22 .side-copy { text-align: center; width: min(54%, 260px); }
+    .cover.style-luxe.variant-28 .masthead { text-align: left; border-left: 5px solid var(--accent); padding-left: 14px; }
+    .cover.style-luxe.variant-28 .cover-mid { grid-template-columns: 1fr 34%; align-items: center; }
+    .cover.style-luxe.variant-28 .bottom { text-align: right; justify-items: end; }
+
+    .cover.style-cute.variant-05 .masthead { text-align: left; }
+    .cover.style-cute.variant-05 .cover-mid { grid-template-columns: 1fr; align-items: start; justify-items: end; }
+    .cover.style-cute.variant-05 .side-copy { text-align: right; width: min(46%, 230px); }
+    .cover.style-cute.variant-11 .masthead { text-align: center; }
+    .cover.style-cute.variant-11 .cover-mid { grid-template-columns: 1fr; align-items: center; justify-items: center; }
+    .cover.style-cute.variant-11 .side-copy { text-align: center; width: min(62%, 280px); }
+    .cover.style-cute.variant-17 .masthead { text-align: right; border-bottom-style: dotted; }
+    .cover.style-cute.variant-17 .cover-mid { grid-template-columns: 38% 1fr; align-items: end; }
+    .cover.style-cute.variant-17 .bottom { text-align: left; }
+    .cover.style-cute.variant-23 .masthead { text-align: left; border-bottom: 0; }
+    .cover.style-cute.variant-23 .cover-mid { grid-template-columns: 1fr 36%; align-items: start; }
+    .cover.style-cute.variant-23 .topics { justify-self: start; }
+    .cover.style-cute.variant-29 .masthead { text-align: center; }
+    .cover.style-cute.variant-29 .cover-mid { grid-template-columns: 1fr; align-items: end; justify-items: start; }
+    .cover.style-cute.variant-29 .topics span { border-radius: 999px; padding-inline: 14px; }
+
+    .cover.style-mode.variant-06 .masthead { text-align: left; }
+    .cover.style-mode.variant-06 .cover-mid { grid-template-columns: 1fr; align-items: end; justify-items: start; }
+    .cover.style-mode.variant-06 .bottom { text-align: left; }
+    .cover.style-mode.variant-12 .masthead { text-align: right; }
+    .cover.style-mode.variant-12 .cover-mid { grid-template-columns: 1fr; align-items: start; justify-items: end; }
+    .cover.style-mode.variant-12 .side-copy { text-align: right; width: min(44%, 230px); }
+    .cover.style-mode.variant-18 .masthead { text-align: center; border-bottom: 0; }
+    .cover.style-mode.variant-18 .cover-mid { grid-template-columns: 42% 1fr; align-items: center; }
+    .cover.style-mode.variant-18 .topics { align-self: end; }
+    .cover.style-mode.variant-24 .masthead { text-align: left; border-bottom: 2px solid var(--accent); }
+    .cover.style-mode.variant-24 .cover-mid { grid-template-columns: 1fr; align-items: center; justify-items: center; }
+    .cover.style-mode.variant-24 .side-copy { text-align: center; width: min(56%, 270px); }
+    .cover.style-mode.variant-30 .masthead { text-align: right; border-left: 4px solid var(--accent); padding-left: 12px; }
+    .cover.style-mode.variant-30 .cover-mid { grid-template-columns: 36% 1fr; align-items: end; }
+    .cover.style-mode.variant-30 .bottom { text-align: right; justify-items: end; }
+
+    .masthead {
+      display: grid;
+      gap: 6px;
+      text-align: center;
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 12px;
+    }
+
+    .kicker, .date-line, .role-label, .topics {
+      font-size: var(--meta-font-size, 11px);
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: none;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .kicker, .date-line { color: var(--meta-text-color, var(--cover-text)); }
+
+    .masthead h1 {
+      margin: 0;
+      font-family: Cinzel, serif;
+      font-size: var(--title-font-size, 82px);
+      line-height: 0.82;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--title-text-color, var(--cover-text));
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+
+    .cover-mid {
+      display: grid;
+      grid-template-columns: 42% 1fr;
+      align-items: center;
+      gap: 16px;
+      padding-top: 28px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .topics {
+      align-self: start;
+      display: grid;
+      gap: 9px;
+      color: var(--topic-text-color, var(--cover-text));
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .topics span {
+      display: block;
+      width: fit-content;
+      padding: 5px 8px;
+      background: rgba(0,0,0,0.28);
+      border-left: 3px solid var(--accent);
+      backdrop-filter: blur(8px);
+      font-size: var(--topic-font-size, 11px);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .side-copy {
+      align-self: end;
+      justify-self: end;
+      width: min(42%, 230px);
+      max-width: 100%;
+      text-align: right;
+      display: grid;
+      gap: 9px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .role-label { color: var(--label-text-color, var(--accent)); }
+
+    .job-name {
+      font-family: "Noto Serif JP", serif;
+      font-weight: 900;
+      font-size: var(--job-font-size, 32px);
+      line-height: 1.08;
+      overflow-wrap: normal;
+      word-break: keep-all;
+      color: var(--job-text-color, var(--cover-text));
+      max-width: 100%;
+    }
+
+    .quote {
+      font-family: "Noto Serif JP", serif;
+      font-size: var(--quote-font-size, 16px);
+      font-weight: 700;
+      line-height: 1.55;
+      color: var(--quote-text-color, var(--cover-text));
+      overflow-wrap: anywhere;
+      max-width: 100%;
+      white-space: pre-line;
+    }
+
+    .cover .cover-mid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, min(44%, 250px));
+      align-content: start;
+      justify-content: stretch;
+    }
+
+    .cover .cover-mid .topics {
+      align-self: start;
+      justify-self: start;
+      max-width: min(48%, 220px);
+      text-align: left;
+    }
+
+    .cover[class*="style-"][class*="variant-"] .cover-mid .topics {
+      align-self: start;
+      max-width: min(52%, 230px);
+    }
+
+    .cover .cover-mid .topics span {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .cover .cover-mid .side-copy,
+    .cover[class*=" variant-"] .cover-mid .side-copy {
+      box-sizing: border-box;
+      width: min(100%, 280px);
+      max-width: calc(100% - 2px);
+      min-width: 0;
+      justify-self: end;
+      overflow: hidden;
+    }
+
+    .cover.style-leon .cover-mid .side-copy,
+    .cover.style-gq .cover-mid .side-copy,
+    .cover.style-mode .cover-mid .side-copy {
+      width: min(58%, 280px);
+      max-width: calc(100% - 2px);
+    }
+
+    .cover.style-gq .cover-mid .topics,
+    .cover.style-soft .cover-mid .topics {
+      justify-self: end;
+      text-align: right;
+    }
+
+    .cover.style-ladies-cover .cover-mid .topics,
+    .cover.style-beauty .cover-mid .topics,
+    .cover.style-luxe .cover-mid .topics,
+    .cover.style-cute .cover-mid .topics {
+      max-width: min(52%, 230px);
+    }
+
+    .cover.variant-08 .cover-mid .side-copy,
+    .cover.variant-14 .cover-mid .side-copy,
+    .cover.variant-20 .cover-mid .side-copy,
+    .cover.variant-26 .cover-mid .side-copy {
+      width: min(54%, 270px);
+      max-width: calc(100% - 2px);
+    }
+
+    .cover.variant-09 .cover-mid .side-copy,
+    .cover.variant-15 .cover-mid .side-copy,
+    .cover.variant-21 .cover-mid .side-copy,
+    .cover.variant-27 .cover-mid .side-copy {
+      width: min(58%, 280px);
+      max-width: calc(100% - 2px);
+      justify-self: start;
+    }
+
+    .cover.variant-10 .cover-mid .side-copy,
+    .cover.variant-16 .cover-mid .side-copy,
+    .cover.variant-22 .cover-mid .side-copy,
+    .cover.variant-28 .cover-mid .side-copy {
+      width: min(64%, 300px);
+      max-width: calc(100% - 2px);
+    }
+
+    .bottom {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .name {
+      margin: 0;
+      font-family: Cinzel, "Noto Serif JP", serif;
+      font-size: var(--name-font-size, 76px);
+      line-height: 0.88;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--name-text-color, var(--cover-text));
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      color: var(--accent);
+      font-size: var(--headline-font-size, 18px);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: none;
+      color: var(--headline-text-color, var(--accent));
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--accent);
+      color: var(--meta-text-color, rgba(255,255,255,0.84));
+    }
+
+    .fineprint {
+      color: var(--copyright-text-color, rgba(255,255,255,0.58));
+      font-size: var(--copyright-font-size, 9px);
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 12px;
+      min-height: 16px;
+      text-align: center;
+    }
+
+    @media (max-width: 1060px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        min-height: auto;
+        position: relative;
+        top: auto;
+        order: -1;
+      }
+
+      .controls {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100vw - 20px, 520px);
+        padding: 10px 0;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions { justify-content: stretch; }
+      .primary-button { flex: 1; }
+      .two { grid-template-columns: 1fr; }
+      .stage { padding: 12px; }
+      .cover { width: 100%; }
+      .cover-mid { grid-template-columns: 1fr 1fr; }
+      .range-row { grid-template-columns: 72px 1fr 48px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="toolbar">
+      <div class="brand">
+        <strong>Aether Cover Studio</strong>
+        <span>Magazine Card Generator</span>
+      </div>
+      <div class="actions">
+        <button class="icon-button" id="randomizeBtn" title="ランダム">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="m4 4 5 5"/></svg>
+        </button>
+        <button class="primary-button" id="downloadBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          PNG保存
+        </button>
+      </div>
+    </header>
+
+    <aside class="panel controls">
+      <section class="section">
+        <div class="section-title">表紙設定</div>
+        <div class="field">
+          <label for="styleCategorySelect">スタイル分類</label>
+          <select id="styleCategorySelect">
+            <option value="mens">メンズ / 30</option>
+            <option value="ladies">レディース / 30</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="styleSelect">表紙スタイル</label>
+          <select id="styleSelect"></select>
+        </div>
+        <div class="field">
+          <label for="fitSelect">画像の表示</label>
+          <select id="fitSelect">
+            <option value="cover">余白なしで埋める</option>
+            <option value="contain">全体を表示</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="imageInput">表紙画像</label>
+          <input id="imageInput" type="file" accept="image/*" multiple>
+          <div class="hint">複数枚をまとめて選択できます。読み込み後は下のサムネイルで使用画像を切り替えます。</div>
+          <div class="image-strip" id="imageStrip"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="themeSelect">文字テーマ</label>
+            <select id="themeSelect">
+              <option value="light">アイボリーライト</option>
+              <option value="dark">編集誌ブラック</option>
+              <option value="gold">ロイヤルゴールド</option>
+              <option value="ice">クリスタルアイス</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filterSelect">写真フィルター</label>
+            <select id="filterSelect">
+              <option value="saturate(1.08) contrast(1.02)">標準クリア</option>
+              <option value="sepia(0.16) saturate(1.16) contrast(1.06)">暖色シネマ</option>
+              <option value="brightness(1.08) saturate(0.82) contrast(0.96)">淡色フェード</option>
+              <option value="grayscale(1) contrast(1.18)">モノクローム</option>
+              <option value="saturate(1.35) contrast(1.18) brightness(0.95)">ドラマポップ</option>
+              <option value="brightness(1.03) contrast(1.12) saturate(1.05)">編集誌クリア</option>
+              <option value="brightness(0.96) contrast(1.2) saturate(0.95)">深いシャドウ</option>
+              <option value="brightness(1.12) contrast(0.92) saturate(0.86)">透明ライト</option>
+              <option value="sepia(0.28) contrast(1.08) saturate(0.9)">セピアヴィンテージ</option>
+              <option value="grayscale(0.75) contrast(1.22) brightness(0.98)">シルバートーン</option>
+              <option value="hue-rotate(-8deg) saturate(1.22) contrast(1.05)">ローズフィルム</option>
+              <option value="hue-rotate(10deg) saturate(1.08) brightness(1.03)">ブルークリア</option>
+              <option value="sepia(0.1) hue-rotate(-18deg) saturate(1.25) contrast(1.1)">夕暮れゴールド</option>
+              <option value="brightness(0.92) contrast(1.28) saturate(1.12)">ノワール強調</option>
+              <option value="brightness(1.16) contrast(0.88) saturate(0.72)">雑誌風フェード</option>
+              <option value="contrast(1.15) saturate(0.55) brightness(1.02)">くすみストリート</option>
+              <option value="contrast(1.05) saturate(1.45) brightness(1.02)">彩度ブースト</option>
+              <option value="sepia(0.08) contrast(1.18) saturate(1.35)">暖色グロス</option>
+              <option value="hue-rotate(185deg) saturate(0.85) contrast(1.05)">クールシアン</option>
+              <option value="brightness(0.9) contrast(1.35) saturate(0.75)">ダーク編集誌</option>
+              <option value="brightness(1.06) contrast(1.02) saturate(1.2) hue-rotate(-4deg)">肌色ウォーム</option>
+              <option value="brightness(1.1) contrast(0.96) saturate(1.05)">ソフトビューティ</option>
+              <option value="contrast(1.08) saturate(0.9) sepia(0.12)">クラシック印刷</option>
+              <option value="brightness(0.98) contrast(1.18) saturate(1.3) hue-rotate(4deg)">鮮やか表紙</option>
+              <option value="brightness(1.02) contrast(1.32) saturate(0.2)">モノアクセント</option>
+              <option value="sepia(0.2) brightness(0.96) contrast(1.25)">ブラウンフィルム</option>
+              <option value="brightness(1.14) contrast(1.08) saturate(0.92)">パールライト</option>
+              <option value="brightness(0.86) contrast(1.16) saturate(1.18)">ナイトムード</option>
+              <option value="contrast(0.92) saturate(1.28) brightness(1.08)">ドリームポップ</option>
+              <option value="sepia(0.06) saturate(1.05) contrast(1.18) brightness(0.94)">カフェトーン</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>アクセントカラー</label>
+          <div class="palette-row" id="paletteRow"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">文字色</div>
+        <div class="color-grid">
+          <label class="color-control">
+            <span>表紙タイトル</span>
+            <input type="color" id="titleColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>小見出し</span>
+            <input type="color" id="metaColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>トピック</span>
+            <input type="color" id="topicColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>ジョブ見出し</span>
+            <input type="color" id="labelColor" value="#ff4f7b">
+          </label>
+          <label class="color-control">
+            <span>ジョブ名</span>
+            <input type="color" id="jobColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>紹介文</span>
+            <input type="color" id="quoteColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>キャッチコピー</span>
+            <input type="color" id="headlineColor" value="#ff4f7b">
+          </label>
+          <label class="color-control">
+            <span>名前</span>
+            <input type="color" id="nameColor" value="#fff8ed">
+          </label>
+          <label class="color-control">
+            <span>権利表記</span>
+            <input type="color" id="copyrightColor" value="#bcb8b0">
+          </label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">文字サイズ</div>
+        <div class="size-grid">
+          <label class="size-control">
+            <span>表紙タイトル</span>
+            <input type="range" id="titleSizeRange" min="24" max="180" step="1" value="82">
+            <input type="number" id="titleSizeNumber" min="24" max="180" step="1" value="82">
+          </label>
+          <label class="size-control">
+            <span>小見出し</span>
+            <input type="range" id="metaSizeRange" min="7" max="32" step="1" value="11">
+            <input type="number" id="metaSizeNumber" min="7" max="32" step="1" value="11">
+          </label>
+          <label class="size-control">
+            <span>トピック</span>
+            <input type="range" id="topicSizeRange" min="8" max="36" step="1" value="11">
+            <input type="number" id="topicSizeNumber" min="8" max="36" step="1" value="11">
+          </label>
+          <label class="size-control">
+            <span>ジョブ名</span>
+            <input type="range" id="jobSizeRange" min="12" max="72" step="1" value="32">
+            <input type="number" id="jobSizeNumber" min="12" max="72" step="1" value="32">
+          </label>
+          <label class="size-control">
+            <span>紹介文</span>
+            <input type="range" id="quoteSizeRange" min="9" max="36" step="1" value="16">
+            <input type="number" id="quoteSizeNumber" min="9" max="36" step="1" value="16">
+          </label>
+          <label class="size-control">
+            <span>キャッチコピー</span>
+            <input type="range" id="headlineSizeRange" min="10" max="64" step="1" value="18">
+            <input type="number" id="headlineSizeNumber" min="10" max="64" step="1" value="18">
+          </label>
+          <label class="size-control">
+            <span>名前</span>
+            <input type="range" id="nameSizeRange" min="20" max="150" step="1" value="76">
+            <input type="number" id="nameSizeNumber" min="20" max="150" step="1" value="76">
+          </label>
+          <label class="size-control">
+            <span>権利表記</span>
+            <input type="range" id="copyrightSizeRange" min="6" max="20" step="1" value="9">
+            <input type="number" id="copyrightSizeNumber" min="6" max="20" step="1" value="9">
+          </label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">プロフィール</div>
+        <div class="two">
+          <div class="field">
+            <label for="magazineInput">表紙タイトル</label>
+            <input id="magazineInput" type="text" value="FFXIV" maxlength="14">
+          </div>
+          <div class="field">
+            <label for="archiveInput">サブタイトル</label>
+            <input id="archiveInput" type="text" value="Eorzean Style Archive" maxlength="32">
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="nameInput">名前</label>
+            <input id="nameInput" type="text" value="LUMINOUS" maxlength="28">
+          </div>
+          <div class="field">
+            <label for="worldInput">ワールド / DC</label>
+            <input id="worldInput" type="text" value="Meteor / Shinryu" maxlength="32">
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="mainJobSelect">メインジョブ</label>
+            <select id="mainJobSelect"></select>
+          </div>
+          <div class="field">
+            <label for="issueInput">発行情報</label>
+            <input id="issueInput" type="text" value="JUN 2026 / VOL. XIV" maxlength="28">
+          </div>
+        </div>
+        <div class="field">
+          <label for="subtitleInput">キャッチコピー</label>
+          <input id="subtitleInput" type="text" value="夜空を着こなす、光の編集者" maxlength="32">
+        </div>
+        <div class="field">
+          <label for="quoteInput">紹介文</label>
+          <textarea id="quoteInput" maxlength="120" placeholder="Enterで改行できます">静かな場所でSSを撮るのが好き。
+ミラプリ、ハウジング、地図、たまに高難易度。</textarea>
+          <div class="hint">Enterで入れた改行が表紙にもそのまま反映されます。</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="job-header">
+          <div class="section-title">サブジョブ <span id="subJobCount">0</span></div>
+          <label class="language-toggle" for="jobEnglishToggle">
+            <input id="jobEnglishToggle" type="checkbox">
+            English ver.
+          </label>
+        </div>
+        <div class="job-board" id="subJobBoard"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">トピック <span id="topicCount">4/7</span></div>
+        <div class="chip-grid" id="topicChips"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">画像位置</div>
+        <div class="range-row">
+          <span>拡大</span>
+          <input id="scaleRange" type="range" min="0.6" max="2.6" step="0.01" value="1">
+          <span id="scaleValue">1.00</span>
+        </div>
+        <div class="range-row">
+          <span>X</span>
+          <input id="xRange" type="range" min="-260" max="260" step="1" value="0">
+          <span id="xValue">0</span>
+        </div>
+        <div class="range-row">
+          <span>Y</span>
+          <input id="yRange" type="range" min="-260" max="260" step="1" value="0">
+          <span id="yValue">0</span>
+        </div>
+        <div class="range-row">
+          <span>回転</span>
+          <input id="rotateRange" type="range" min="-180" max="180" step="1" value="0">
+          <span id="rotateValue">0°</span>
+        </div>
+      </section>
+
+    </aside>
+
+    <section class="panel stage">
+      <div class="cover-wrap">
+        <article class="cover style-visque" id="cover">
+          <div class="placeholder-art" id="placeholderArt"></div>
+          <img id="coverImage" alt="">
+          <div class="cover-content">
+            <div class="masthead">
+              <div class="kicker" id="issueOutput">JUN 2026 / VOL. XIV</div>
+              <h1 id="magazineOutput">FFXIV</h1>
+              <div class="date-line" id="archiveOutput">Eorzean Style Archive</div>
+            </div>
+            <div class="cover-mid">
+              <div class="topics" id="topicsOutput"></div>
+              <div class="side-copy">
+                <div class="role-label">Main Job</div>
+                <div class="job-name" id="jobOutput">Astrologian</div>
+                <div class="sub-jobs" id="subJobsOutput"></div>
+                <div class="quote" id="quoteOutput">静かな場所でSSを撮るのが好き。ミラプリ、ハウジング、地図、たまに高難易度。</div>
+              </div>
+            </div>
+            <div class="bottom">
+              <div class="subtitle" id="subtitleOutput">夜空を着こなす、光の編集者</div>
+              <h2 class="name" id="nameOutput">LUMINOUS</h2>
+              <div class="meta">
+                <span id="worldOutput">Meteor / Shinryu</span>
+                <span>Community Cover</span>
+              </div>
+              <div class="fineprint">FINAL FANTASY XIV @SQUARE ENIX</div>
+            </div>
+          </div>
+        </article>
+        <div class="status" id="status"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const root = document.documentElement;
+    const cover = $("cover");
+    const coverImage = $("coverImage");
+    const placeholderArt = $("placeholderArt");
+    const status = $("status");
+
+    const palettes = [
+      ["#ff4f7b", "#37d5c5"],
+      ["#f8c95a", "#e95f42"],
+      ["#a6e8ff", "#6a7cff"],
+      ["#e9e0cf", "#cc313d"],
+      ["#b8f26a", "#35b7ff"],
+      ["#f2a7ff", "#ffe66b"]
+    ];
+    const mensLayouts = ["visque", "simple", "leon", "gq", "minimal", "fashion"];
+    const ladiesLayouts = ["ladies-cover", "beauty", "soft", "luxe", "cute", "mode"];
+    const mensStyleNames = [
+      "Editorial Noir", "Standard Rock", "Impact Rust", "Bold Signal", "Minimal Red", "Street Snap",
+      "Urban Silver", "Cafe Classic", "Night Rider", "Monochrome Edge", "Royal Navy", "Utility Mode",
+      "Vintage Film", "Sharp Tailor", "Dark Academia", "Desert Casual", "Neon Avenue", "Winter Coat",
+      "Black Label", "Gold Type", "Concrete Mood", "Deep Forest", "Denim Issue", "Clean Modern",
+      "Sport Luxe", "Retro Poster", "Quiet Luxury", "City Explorer", "High Contrast", "Archive Cover"
+    ];
+    const ladiesStyleNames = [
+      "Elegant Bloom", "Soft Beige", "Muse Pink", "Pearl Cover", "Minimal Blue", "Casual Snap",
+      "Rose Editorial", "Luminous White", "Ribbon Issue", "Chic Street", "Velvet Night", "Spring Mint",
+      "Classic Serif", "Paris Mode", "Pastel Pop", "Ocean Dress", "Cafe Latte", "Monochrome Muse",
+      "Crystal Light", "Garden Story", "Urban Grace", "Fine Jewelry", "Red Dress", "Powder Sky",
+      "Lady Archive", "Cream Poster", "Romantic Type", "Modern Muse", "Sunny Casual", "Cover Girl"
+    ];
+    const stylePalettes = [
+      ["#ff4f7b", "#37d5c5"], ["#d7bf6a", "#0b1731"], ["#c96a4d", "#f2f0e8"], ["#f2ef45", "#ffffff"],
+      ["#d44836", "#82d4df"], ["#c35d37", "#efe7cd"], ["#bfc7d5", "#111318"], ["#f4b23f", "#2b211b"],
+      ["#8bdcff", "#20243a"], ["#eeeeee", "#111111"], ["#8aa8ff", "#12192b"], ["#c9d7a2", "#2f3328"],
+      ["#e0a57e", "#3c2e28"], ["#ffffff", "#1b1b1b"], ["#d2b48c", "#252018"], ["#e7c88f", "#5d4732"],
+      ["#63ffcb", "#191d23"], ["#d8f7ff", "#3f5362"], ["#f2f2f2", "#252525"], ["#ffd87a", "#34240f"],
+      ["#d0d0cb", "#404040"], ["#97bd7f", "#1e3225"], ["#6fa8dc", "#17263a"], ["#f7f4ec", "#3a3a3a"],
+      ["#ff8f70", "#202028"], ["#ef6a4f", "#f2e8d0"], ["#cdbd9d", "#151515"], ["#8fd0ff", "#253449"],
+      ["#ff3e6c", "#050505"], ["#cab79d", "#3b3028"]
+    ];
+    function buildStylePresets(names, category, layouts) {
+      return names.map((name, index) => ({
+        key: `${category}-${String(index + 1).padStart(2, "0")}`,
+        label: `${String(index + 1).padStart(2, "0")} ${name}`,
+        layout: layouts[index % layouts.length],
+        variant: `variant-${String(index + 1).padStart(2, "0")}`,
+        magazine: "FFXIV",
+        archive: name,
+        accent: stylePalettes[index % stylePalettes.length]
+      }));
+    }
+    const coverStyles = {
+      mens: buildStylePresets(mensStyleNames, "mens", mensLayouts),
+      ladies: buildStylePresets(ladiesStyleNames, "ladies", ladiesLayouts)
+    };
+    let currentStyleCategory = "mens";
+
+    const topics = ["SS撮影", "ミラプリ", "ハウジング", "地図", "レイド", "フレンド募集", "クラフター", "ギャザラー", "PvP", "ロールプレイ", "絶", "零式"];
+    let selectedTopics = ["SS撮影", "ミラプリ", "ハウジング", "地図"];
+    const jobGroups = [
+      {
+        role: "Tank",
+        jobs: [
+          { code: "PLD", ja: "ナ", full: "Paladin" },
+          { code: "WAR", ja: "戦", full: "Warrior" },
+          { code: "DRK", ja: "暗", full: "Dark Knight" },
+          { code: "GNB", ja: "ガンブレ", full: "Gunbreaker" }
+        ]
+      },
+      {
+        role: "Healer",
+        jobs: [
+          { code: "WHM", ja: "白", full: "White Mage" },
+          { code: "SCH", ja: "学", full: "Scholar" },
+          { code: "AST", ja: "占", full: "Astrologian" },
+          { code: "SGE", ja: "賢", full: "Sage" }
+        ]
+      },
+      {
+        role: "DPS",
+        jobs: [
+          { code: "MNK", ja: "モ", full: "Monk" },
+          { code: "DRG", ja: "竜", full: "Dragoon" },
+          { code: "NIN", ja: "忍", full: "Ninja" },
+          { code: "SAM", ja: "侍", full: "Samurai" },
+          { code: "RPR", ja: "リーパー", full: "Reaper" },
+          { code: "VPR", ja: "ヴァイパー", full: "Viper" },
+          { code: "BRD", ja: "詩", full: "Bard" },
+          { code: "MCH", ja: "機", full: "Machinist" },
+          { code: "DNC", ja: "踊", full: "Dancer" },
+          { code: "BLM", ja: "黒魔", full: "Black Mage" },
+          { code: "SMN", ja: "召", full: "Summoner" },
+          { code: "RDM", ja: "赤魔", full: "Red Mage" },
+          { code: "PCT", ja: "ピクト", full: "Pictomancer" }
+        ]
+      },
+      {
+        role: "Hand / Land",
+        jobs: [
+          { code: "CRP", ja: "木工", full: "Carpenter" },
+          { code: "BSM", ja: "鍛冶", full: "Blacksmith" },
+          { code: "ARM", ja: "甲冑", full: "Armorer" },
+          { code: "GSM", ja: "彫金", full: "Goldsmith" },
+          { code: "LWR", ja: "革", full: "Leatherworker" },
+          { code: "WVR", ja: "裁縫", full: "Weaver" },
+          { code: "ALC", ja: "錬金", full: "Alchemist" },
+          { code: "CUL", ja: "調理", full: "Culinarian" },
+          { code: "MIN", ja: "採掘", full: "Miner" },
+          { code: "BTN", ja: "園芸", full: "Botanist" },
+          { code: "FSH", ja: "漁師", full: "Fisher" }
+        ]
+      }
+    ];
+    const allJobs = jobGroups.flatMap((group) => group.jobs);
+    let selectedMainJob = "AST";
+    let selectedSubJobs = [];
+    let uploadedImages = [];
+    let currentImageIndex = -1;
+    let imageState = { x: 0, y: 0, scale: 1, rotate: 0 };
+    let drag = null;
+
+    function setText(inputId, outputId) {
+      const value = $(inputId).value.trim();
+      $(outputId).textContent = value || " ";
+    }
+
+    function syncProfile() {
+      setText("magazineInput", "magazineOutput");
+      setText("archiveInput", "archiveOutput");
+      setText("nameInput", "nameOutput");
+      setText("worldInput", "worldOutput");
+      setText("issueInput", "issueOutput");
+      setText("subtitleInput", "subtitleOutput");
+      setText("quoteInput", "quoteOutput");
+      syncJobs();
+    }
+
+    function isEnglishJobs() {
+      return $("jobEnglishToggle").checked;
+    }
+
+    function getJob(code) {
+      return allJobs.find((job) => job.code === code);
+    }
+
+    function jobLabel(job) {
+      return isEnglishJobs() ? job.code : job.ja;
+    }
+
+    function renderMainJobSelect() {
+      const select = $("mainJobSelect");
+      const current = selectedMainJob || select.value;
+      const placeholder = isEnglishJobs() ? "Select" : "Select (選択)";
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      jobGroups.forEach((group) => {
+        const optionGroup = document.createElement("optgroup");
+        optionGroup.label = group.role.toUpperCase();
+        group.jobs.forEach((job) => {
+          const option = document.createElement("option");
+          option.value = job.code;
+          option.textContent = jobLabel(job);
+          optionGroup.appendChild(option);
+        });
+        select.appendChild(optionGroup);
+      });
+      select.value = current;
+    }
+
+    function renderSubJobs() {
+      const board = $("subJobBoard");
+      board.innerHTML = "";
+      jobGroups.forEach((group) => {
+        const roleBlock = document.createElement("div");
+        roleBlock.className = "job-role";
+        roleBlock.innerHTML = `<div class="job-role-title">${group.role}</div>`;
+        const chipGrid = document.createElement("div");
+        chipGrid.className = "job-chip-grid";
+        group.jobs.forEach((job) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip" + (selectedSubJobs.includes(job.code) ? " is-active" : "");
+          btn.textContent = jobLabel(job);
+          btn.title = job.full;
+          btn.addEventListener("click", () => {
+            if (selectedSubJobs.includes(job.code)) {
+              selectedSubJobs = selectedSubJobs.filter((code) => code !== job.code);
+            } else {
+              selectedSubJobs.push(job.code);
+            }
+            renderSubJobs();
+            syncJobs();
+          });
+          chipGrid.appendChild(btn);
+        });
+        roleBlock.appendChild(chipGrid);
+        board.appendChild(roleBlock);
+      });
+      $("subJobCount").textContent = selectedSubJobs.length;
+    }
+
+    function syncJobs() {
+      const mainJob = getJob(selectedMainJob);
+      $("jobOutput").textContent = mainJob ? mainJob.full : "Select Job";
+      const labels = selectedSubJobs.map((code) => {
+        const job = getJob(code);
+        return job ? jobLabel(job) : code;
+      });
+      $("subJobsOutput").textContent = labels.length ? `Sub Jobs / ${labels.join("  ")}` : "";
+    }
+
+    function renderPalettes() {
+      const row = $("paletteRow");
+      row.innerHTML = "";
+      palettes.forEach((pair, index) => {
+        const btn = document.createElement("button");
+        btn.className = "swatch" + (index === 0 ? " is-active" : "");
+        btn.title = `Palette ${index + 1}`;
+        btn.style.setProperty("--swatch", `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`);
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".swatch").forEach((el) => el.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          root.style.setProperty("--accent", pair[0]);
+          root.style.setProperty("--accent-2", pair[1]);
+        });
+        row.appendChild(btn);
+      });
+    }
+
+    function renderStyleOptions() {
+      const select = $("styleSelect");
+      select.innerHTML = "";
+      coverStyles[currentStyleCategory].forEach((style) => {
+        const option = document.createElement("option");
+        option.value = style.key;
+        option.textContent = style.label;
+        select.appendChild(option);
+      });
+    }
+
+    function getCurrentStyle(styleKey = $("styleSelect").value) {
+      return coverStyles[currentStyleCategory].find((style) => style.key === styleKey) || coverStyles[currentStyleCategory][0];
+    }
+
+    function applyCoverStyle(styleKey, updateText = true) {
+      const style = getCurrentStyle(styleKey);
+      cover.classList.remove(
+        "style-visque", "style-simple", "style-leon", "style-fashion", "style-gq", "style-minimal",
+        "style-ladies-cover", "style-beauty", "style-soft", "style-luxe", "style-cute", "style-mode",
+        ...Array.from({ length: 30 }, (_, index) => `variant-${String(index + 1).padStart(2, "0")}`)
+      );
+      cover.classList.add(`style-${style.layout}`);
+      cover.classList.add(style.variant);
+      root.style.setProperty("--accent", style.accent[0]);
+      root.style.setProperty("--accent-2", style.accent[1]);
+      if (updateText) {
+        $("magazineInput").value = style.magazine;
+        $("archiveInput").value = style.archive;
+        syncProfile();
+      }
+    }
+
+    function renderTopics() {
+      const grid = $("topicChips");
+      grid.innerHTML = "";
+      topics.forEach((topic) => {
+        const btn = document.createElement("button");
+        btn.className = "chip" + (selectedTopics.includes(topic) ? " is-active" : "");
+        btn.textContent = topic;
+        btn.addEventListener("click", () => {
+          if (selectedTopics.includes(topic)) {
+            selectedTopics = selectedTopics.filter((item) => item !== topic);
+          } else if (selectedTopics.length < 7) {
+            selectedTopics.push(topic);
+          }
+          renderTopics();
+          syncTopics();
+        });
+        grid.appendChild(btn);
+      });
+      $("topicCount").textContent = `${selectedTopics.length}/7`;
+    }
+
+    function syncTopics() {
+      $("topicsOutput").innerHTML = selectedTopics.map((topic) => `<span>${topic}</span>`).join("");
+    }
+
+    function syncImage() {
+      const image = uploadedImages[currentImageIndex];
+      if (image) {
+        const coverRect = cover.getBoundingClientRect();
+        const coverRatio = coverRect.width / coverRect.height;
+        const imageRatio = image.width / image.height;
+        const fit = $("fitSelect").value;
+        let renderWidth;
+        let renderHeight;
+        if ((fit === "cover" && imageRatio > coverRatio) || (fit === "contain" && imageRatio < coverRatio)) {
+          renderHeight = coverRect.height;
+          renderWidth = renderHeight * imageRatio;
+        } else {
+          renderWidth = coverRect.width;
+          renderHeight = renderWidth / imageRatio;
+        }
+        cover.style.setProperty("--img-render-width", `${renderWidth}px`);
+        cover.style.setProperty("--img-render-height", `${renderHeight}px`);
+      }
+      cover.style.setProperty("--img-x", `${imageState.x}px`);
+      cover.style.setProperty("--img-y", `${imageState.y}px`);
+      cover.style.setProperty("--img-scale", imageState.scale);
+      cover.style.setProperty("--img-rotate", `${imageState.rotate}deg`);
+      $("xRange").value = imageState.x;
+      $("yRange").value = imageState.y;
+      $("scaleRange").value = imageState.scale;
+      $("rotateRange").value = imageState.rotate;
+      $("xValue").textContent = Math.round(imageState.x);
+      $("yValue").textContent = Math.round(imageState.y);
+      $("scaleValue").textContent = Number(imageState.scale).toFixed(2);
+      $("rotateValue").textContent = `${Math.round(imageState.rotate)}°`;
+      if (currentImageIndex >= 0 && uploadedImages[currentImageIndex]) {
+        uploadedImages[currentImageIndex].state = { ...imageState };
+      }
+    }
+
+    function setStatus(text) {
+      status.textContent = text;
+      if (text) window.setTimeout(() => { if (status.textContent === text) status.textContent = ""; }, 2400);
+    }
+
+    const textColorControls = {
+      titleColor: "--title-text-color",
+      metaColor: "--meta-text-color",
+      topicColor: "--topic-text-color",
+      labelColor: "--label-text-color",
+      jobColor: "--job-text-color",
+      quoteColor: "--quote-text-color",
+      headlineColor: "--headline-text-color",
+      nameColor: "--name-text-color",
+      copyrightColor: "--copyright-text-color"
+    };
+    const textSizeControls = {
+      titleSize: { cssVar: "--title-font-size", min: 24, max: 180, defaultValue: 82 },
+      metaSize: { cssVar: "--meta-font-size", min: 7, max: 32, defaultValue: 11 },
+      topicSize: { cssVar: "--topic-font-size", min: 8, max: 36, defaultValue: 11 },
+      jobSize: { cssVar: "--job-font-size", min: 12, max: 72, defaultValue: 32 },
+      quoteSize: { cssVar: "--quote-font-size", min: 9, max: 36, defaultValue: 16 },
+      headlineSize: { cssVar: "--headline-font-size", min: 10, max: 64, defaultValue: 18 },
+      nameSize: { cssVar: "--name-font-size", min: 20, max: 150, defaultValue: 76 },
+      copyrightSize: { cssVar: "--copyright-font-size", min: 6, max: 20, defaultValue: 9 }
+    };
+
+    function applyTextColors() {
+      Object.entries(textColorControls).forEach(([id, cssVar]) => {
+        root.style.setProperty(cssVar, $(id).value);
+      });
+    }
+
+    function setTextPalette(colors) {
+      Object.entries(colors).forEach(([id, value]) => {
+        if ($(id)) $(id).value = value;
+      });
+      applyTextColors();
+    }
+
+    function setTextSize(key, rawValue) {
+      const config = textSizeControls[key];
+      const value = Math.min(config.max, Math.max(config.min, Number(rawValue) || config.defaultValue));
+      $(`${key}Range`).value = value;
+      $(`${key}Number`).value = value;
+      root.style.setProperty(config.cssVar, `${value}px`);
+    }
+
+    function applyTextSizes() {
+      Object.keys(textSizeControls).forEach((key) => {
+        setTextSize(key, $(`${key}Number`).value);
+      });
+    }
+
+    function renderImageStrip() {
+      const strip = $("imageStrip");
+      strip.innerHTML = "";
+      uploadedImages.forEach((image, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "image-thumb" + (index === currentImageIndex ? " is-active" : "");
+        button.title = image.name;
+        button.innerHTML = `<img alt="" src="${image.src}">`;
+        button.addEventListener("click", () => selectImage(index));
+        strip.appendChild(button);
+      });
+    }
+
+    function selectImage(index) {
+      if (!uploadedImages[index]) return;
+      if (currentImageIndex >= 0 && uploadedImages[currentImageIndex]) {
+        uploadedImages[currentImageIndex].state = { ...imageState };
+      }
+      currentImageIndex = index;
+      coverImage.src = uploadedImages[index].src;
+      coverImage.style.display = "block";
+      placeholderArt.style.display = "none";
+      imageState = { ...uploadedImages[index].state };
+      requestAnimationFrame(syncImage);
+      renderImageStrip();
+    }
+
+    ["magazineInput", "archiveInput", "nameInput", "worldInput", "issueInput", "subtitleInput", "quoteInput"].forEach((id) => {
+      $(id).addEventListener("input", syncProfile);
+    });
+
+    $("styleSelect").addEventListener("change", (event) => {
+      applyCoverStyle(event.target.value);
+    });
+
+    $("styleCategorySelect").addEventListener("change", (event) => {
+      currentStyleCategory = event.target.value;
+      renderStyleOptions();
+      applyCoverStyle($("styleSelect").value);
+    });
+
+    $("fitSelect").addEventListener("change", (event) => {
+      cover.style.setProperty("--img-fit", event.target.value);
+      syncImage();
+    });
+
+    $("mainJobSelect").addEventListener("change", (event) => {
+      selectedMainJob = event.target.value;
+      syncJobs();
+    });
+
+    $("jobEnglishToggle").addEventListener("change", () => {
+      renderMainJobSelect();
+      renderSubJobs();
+      syncJobs();
+    });
+
+    $("themeSelect").addEventListener("change", (event) => {
+      const themes = {
+        light: { base: "#fff8ed", accent: "#ff4f7b", copyright: "#bcb8b0", shadow: "0 3px 18px rgba(0,0,0,0.56)" },
+        dark: { base: "#15110f", accent: "#4a2a24", copyright: "#4d4844", shadow: "0 1px 12px rgba(255,255,255,0.52)" },
+        gold: { base: "#ffd87a", accent: "#f4b23f", copyright: "#c9a65b", shadow: "0 4px 20px rgba(0,0,0,0.58)" },
+        ice: { base: "#d8f7ff", accent: "#8bdcff", copyright: "#a7ccd5", shadow: "0 4px 18px rgba(0,35,55,0.62)" }
+      };
+      const theme = themes[event.target.value];
+      root.style.setProperty("--cover-text", theme.base);
+      cover.querySelector(".cover-content").style.textShadow = theme.shadow;
+      setTextPalette({
+        titleColor: theme.base,
+        metaColor: theme.base,
+        topicColor: theme.base,
+        labelColor: theme.accent,
+        jobColor: theme.base,
+        quoteColor: theme.base,
+        headlineColor: theme.accent,
+        nameColor: theme.base,
+        copyrightColor: theme.copyright
+      });
+    });
+
+    Object.keys(textColorControls).forEach((id) => {
+      $(id).addEventListener("input", applyTextColors);
+    });
+
+    Object.keys(textSizeControls).forEach((key) => {
+      $(`${key}Range`).addEventListener("input", (event) => setTextSize(key, event.target.value));
+      $(`${key}Number`).addEventListener("input", (event) => setTextSize(key, event.target.value));
+    });
+
+    $("filterSelect").addEventListener("change", (event) => {
+      cover.style.setProperty("--img-filter", event.target.value);
+    });
+
+    $("imageInput").addEventListener("change", (event) => {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      const readers = files.map((file) => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const probe = new Image();
+          probe.onload = () => resolve({
+            name: file.name,
+            src: reader.result,
+            width: probe.naturalWidth,
+            height: probe.naturalHeight,
+            state: { x: 0, y: 0, scale: 1, rotate: 0 }
+          });
+          probe.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }));
+      Promise.all(readers).then((images) => {
+        uploadedImages = images;
+        selectImage(0);
+        setStatus(`${images.length}枚の画像を読み込みました`);
+      });
+    });
+
+    $("scaleRange").addEventListener("input", (event) => {
+      imageState.scale = Number(event.target.value);
+      syncImage();
+    });
+
+    $("xRange").addEventListener("input", (event) => {
+      imageState.x = Number(event.target.value);
+      syncImage();
+    });
+
+    $("yRange").addEventListener("input", (event) => {
+      imageState.y = Number(event.target.value);
+      syncImage();
+    });
+
+    $("rotateRange").addEventListener("input", (event) => {
+      imageState.rotate = Number(event.target.value);
+      syncImage();
+    });
+
+    cover.addEventListener("pointerdown", (event) => {
+      if (!coverImage.src) return;
+      cover.setPointerCapture(event.pointerId);
+      drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: imageState.x, y: imageState.y };
+    });
+
+    cover.addEventListener("pointermove", (event) => {
+      if (!drag || drag.id !== event.pointerId) return;
+      imageState.x = Math.max(-260, Math.min(260, drag.x + event.clientX - drag.startX));
+      imageState.y = Math.max(-260, Math.min(260, drag.y + event.clientY - drag.startY));
+      syncImage();
+    });
+
+    window.addEventListener("pointerup", () => { drag = null; });
+    window.addEventListener("resize", syncImage);
+
+    cover.addEventListener("wheel", (event) => {
+      if (!coverImage.src) return;
+      event.preventDefault();
+      imageState.scale = Math.max(0.6, Math.min(2.6, imageState.scale + (event.deltaY < 0 ? 0.04 : -0.04)));
+      syncImage();
+    }, { passive: false });
+
+    $("randomizeBtn").addEventListener("click", () => {
+      const styles = coverStyles[currentStyleCategory];
+      const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+      $("styleSelect").value = randomStyle.key;
+      applyCoverStyle(randomStyle.key);
+      const shuffled = [...topics].sort(() => Math.random() - 0.5);
+      selectedTopics = shuffled.slice(0, 4 + Math.floor(Math.random() * 3));
+      renderTopics();
+      syncTopics();
+      setStatus("スタイルをシャッフルしました");
+    });
+
+    $("downloadBtn").addEventListener("click", async () => {
+      setStatus("書き出し中...");
+      const originalWidth = cover.style.width;
+      const originalHeight = cover.style.height;
+      try {
+        const currentRect = cover.getBoundingClientRect();
+        cover.style.width = `${currentRect.width}px`;
+        cover.style.height = `${currentRect.height}px`;
+        syncImage();
+        await document.fonts.ready;
+        const canvas = await html2canvas(cover, {
+          scale: 3,
+          backgroundColor: null,
+          useCORS: true,
+          logging: false
+        });
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          const name = $("nameInput").value.trim().replace(/[\\/:*?"<>|]+/g, "-") || "magazine-card";
+          a.download = `${name}-cover.png`;
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          setStatus("PNGを書き出しました");
+        }, "image/png");
+      } catch (error) {
+        console.error(error);
+        setStatus("書き出しに失敗しました");
+      } finally {
+        cover.style.width = originalWidth;
+        cover.style.height = originalHeight;
+        syncImage();
+      }
+    });
+
+    renderPalettes();
+    renderStyleOptions();
+    applyCoverStyle($("styleSelect").value);
+    renderMainJobSelect();
+    renderSubJobs();
+    renderTopics();
+    syncTopics();
+    syncProfile();
+    applyTextColors();
+    applyTextSizes();
+    syncImage();
+  </script>
+</body>
+</html>
