@@ -1464,6 +1464,41 @@
       max-width: calc(100% - 2px);
     }
 
+    .cover.style-beauty.variant-14 .cover-mid,
+    .cover.style-beauty.variant-26 .cover-mid,
+    .cover.style-luxe.variant-16 .cover-mid,
+    .cover.style-luxe.variant-28 .cover-mid,
+    .cover.style-mode.variant-18 .cover-mid,
+    .cover.style-cute.variant-23 .cover-mid {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: end;
+    }
+
+    .cover.style-beauty.variant-14 .cover-mid .side-copy,
+    .cover.style-beauty.variant-26 .cover-mid .side-copy,
+    .cover.style-luxe.variant-16 .cover-mid .side-copy,
+    .cover.style-luxe.variant-28 .cover-mid .side-copy,
+    .cover.style-mode.variant-18 .cover-mid .side-copy,
+    .cover.style-cute.variant-23 .cover-mid .side-copy {
+      width: min(58%, 292px);
+      max-width: calc(100% - 14px);
+      justify-self: end;
+      margin-inline: 0 4px;
+      text-align: right;
+    }
+
+    .cover.style-cute.variant-23 .cover-mid,
+    .cover.style-mode.variant-18 .cover-mid {
+      justify-items: start;
+    }
+
+    .cover.style-cute.variant-23 .cover-mid .side-copy,
+    .cover.style-mode.variant-18 .cover-mid .side-copy {
+      justify-self: start;
+      margin-inline: 4px 0;
+      text-align: left;
+    }
+
     .bottom {
       display: grid;
       gap: 12px;
