@@ -706,7 +706,7 @@
       width: var(--free-width, 50%) !important;
       max-width: none !important;
       margin: 0 !important;
-      transform: translate(-50%, -50%) rotate(var(--free-rotation, 0deg)) !important;
+      transform: translate(-50%, -50%) rotate(var(--free-rotation, 0deg)) scale(var(--free-scale, 1)) !important;
       box-sizing: border-box;
       z-index: 8;
       cursor: move;
@@ -2345,6 +2345,11 @@
           <span id="freeWidthValue">50%</span>
         </div>
         <div class="range-row">
+          <span>拡大率</span>
+          <input id="freeScaleRange" type="range" min="0.5" max="2.5" step="0.01" value="1">
+          <span id="freeScaleValue">1.00</span>
+        </div>
+        <div class="range-row">
           <span>角度</span>
           <input id="freeRotateRange" type="range" min="-180" max="180" step="1" value="0">
           <span id="freeRotateValue">0°</span>
@@ -2627,7 +2632,7 @@
       title: { x: 50, y: 12, width: 88 },
       archive: { x: 50, y: 19, width: 52 },
       topics: { x: 17, y: 34, width: 28 },
-      job: { x: 78, y: 50, width: 38 },
+      job: { x: 70, y: 50, width: 56 },
       headline: { x: 24, y: 79, width: 44 },
       name: { x: 28, y: 87, width: 52 },
       meta: { x: 50, y: 94, width: 90 },
@@ -2636,6 +2641,7 @@
     Object.values(freeLayoutDefaults).forEach((state) => {
       state.direction = "horizontal";
       state.rotation = 0;
+      state.scale = 1;
     });
 
     function createFreeLayoutPreset(index, feminine) {
@@ -2723,6 +2729,10 @@
         state.x = Math.max(2, Math.min(98, state.x + variation * (((elementIndex + index) % 3) - 1) * 1.4));
         state.y = Math.max(2, Math.min(98, state.y + variation * (((elementIndex * 2 + index) % 3) - 1) * 0.8));
         state.rotation = 0;
+        if (key === "job") {
+          state.width = Math.max(56, state.width);
+          state.x = Math.max(state.width / 2, Math.min(100 - state.width / 2, state.x));
+        }
         return [key, state];
       }));
     }
@@ -3029,6 +3039,7 @@
         element.style.setProperty("--free-x", `${state.x}%`);
         element.style.setProperty("--free-y", `${state.y}%`);
         element.style.setProperty("--free-width", `${state.width}%`);
+        element.style.setProperty("--free-scale", state.scale);
         const directionRotation = state.direction === "diagonal-up"
           ? -15
           : (state.direction === "diagonal-down" ? 15 : 0);
@@ -3037,7 +3048,7 @@
           ? (state.direction === "vertical-rl" || state.direction === "vertical-lr" ? state.direction : "horizontal-tb")
           : "";
       });
-      ["freeElementSelect", "freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeRotateRange"].forEach((id) => {
+      ["freeElementSelect", "freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeScaleRange", "freeRotateRange"].forEach((id) => {
         $(id).disabled = !enabled;
       });
       const selected = freeLayoutState[selectedFreeElement];
@@ -3045,11 +3056,13 @@
       $("freeXRange").value = selected.x;
       $("freeYRange").value = selected.y;
       $("freeWidthRange").value = selected.width;
+      $("freeScaleRange").value = selected.scale;
       $("freeDirectionSelect").value = selected.direction;
       $("freeRotateRange").value = selected.rotation;
       $("freeXValue").textContent = Math.round(selected.x);
       $("freeYValue").textContent = Math.round(selected.y);
       $("freeWidthValue").textContent = `${Math.round(selected.width)}%`;
+      $("freeScaleValue").textContent = Number(selected.scale).toFixed(2);
       $("freeRotateValue").textContent = `${Math.round(selected.rotation)}°`;
     }
 
@@ -3550,7 +3563,7 @@
       applyFreeLayout();
     });
 
-    [["freeXRange", "x"], ["freeYRange", "y"], ["freeWidthRange", "width"]].forEach(([id, key]) => {
+    [["freeXRange", "x"], ["freeYRange", "y"], ["freeWidthRange", "width"], ["freeScaleRange", "scale"]].forEach(([id, key]) => {
       $(id).addEventListener("input", (event) => {
         if (!isFreeLayoutCategory()) return;
         freeLayoutState[selectedFreeElement][key] = Number(event.target.value);
