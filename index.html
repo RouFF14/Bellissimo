@@ -226,6 +226,11 @@
     }
 
     select option { background: #15171d; color: var(--ink); }
+    select optgroup {
+      background: #252832;
+      color: #f4b23f;
+      font-weight: 800;
+    }
 
     input[type="text"]:focus, select:focus, textarea:focus {
       border-color: rgba(255, 255, 255, 0.42);
@@ -1470,6 +1475,19 @@
       white-space: pre-line;
     }
 
+    .active-time {
+      font-size: var(--meta-font-size, 11px);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: var(--quote-text-color, var(--cover-text));
+      white-space: nowrap;
+    }
+
+    .active-time-label {
+      color: var(--label-text-color, var(--accent));
+      margin-right: 0.45em;
+    }
+
     .cover .cover-mid {
       grid-template-columns: minmax(0, 1fr) minmax(0, min(44%, 250px));
       align-content: start;
@@ -1646,6 +1664,7 @@
     .cover .role-label,
     .cover .job-name,
     .cover .sub-jobs,
+    .cover .active-time,
     .cover .quote,
     .cover .subtitle,
     .cover .meta,
@@ -1935,6 +1954,7 @@
           <label class="toggle-chip"><input type="checkbox" id="showArchive" checked>サブタイトル</label>
           <label class="toggle-chip"><input type="checkbox" id="showTopics" checked>トピック</label>
           <label class="toggle-chip"><input type="checkbox" id="showJob" checked>ジョブ欄</label>
+          <label class="toggle-chip"><input type="checkbox" id="showActiveTime" checked>活動時間</label>
           <label class="toggle-chip"><input type="checkbox" id="showHeadline" checked>キャッチコピー</label>
           <label class="toggle-chip"><input type="checkbox" id="showName" checked>名前</label>
           <label class="toggle-chip"><input type="checkbox" id="showMeta" checked>ワールド</label>
@@ -2063,6 +2083,16 @@
             <input id="issueInput" type="text" value="JUN 2026 / VOL. XIV" maxlength="28">
           </div>
         </div>
+        <div class="two">
+          <div class="field">
+            <label for="activeStartSelect">活動開始</label>
+            <select id="activeStartSelect"></select>
+          </div>
+          <div class="field">
+            <label for="activeEndSelect">活動終了</label>
+            <select id="activeEndSelect"></select>
+          </div>
+        </div>
         <div class="field">
           <label for="subtitleInput">キャッチコピー</label>
           <input id="subtitleInput" type="text" value="夜空を着こなす、光の編集者" maxlength="32">
@@ -2173,6 +2203,7 @@
                 <div class="role-label">Main Job</div>
                 <div class="job-name" id="jobOutput">Astrologian</div>
                 <div class="sub-jobs" id="subJobsOutput"></div>
+                <div class="active-time" id="activeTimeOutput"><span class="active-time-label">Active Time</span>18:00–24:00</div>
                 <div class="quote" id="quoteOutput">静かな場所でSSを撮るのが好き。ミラプリ、ハウジング、地図、たまに高難易度。</div>
               </div>
             </div>
@@ -2322,6 +2353,7 @@
       showArchive: ["#archiveOutput"],
       showTopics: ["#topicsOutput"],
       showJob: [".side-copy"],
+      showActiveTime: ["#activeTimeOutput"],
       showHeadline: ["#subtitleOutput"],
       showName: ["#nameOutput"],
       showMeta: [".meta"],
@@ -2350,7 +2382,28 @@
       setText("issueInput", "issueOutput");
       setText("subtitleInput", "subtitleOutput");
       setText("quoteInput", "quoteOutput");
+      syncActiveTime();
       syncJobs();
+    }
+
+    function setupActiveTimeSelects() {
+      const start = $("activeStartSelect");
+      const end = $("activeEndSelect");
+      const times = Array.from({ length: 48 }, (_, index) => {
+        const hour = String(Math.floor(index / 2)).padStart(2, "0");
+        const minute = index % 2 ? "30" : "00";
+        return `${hour}:${minute}`;
+      });
+      start.innerHTML = times.map((time) => `<option value="${time}">${time}</option>`).join("");
+      end.innerHTML = [...times.slice(1), "24:00"].map((time) => `<option value="${time}">${time}</option>`).join("");
+      start.value = "18:00";
+      end.value = "24:00";
+    }
+
+    function syncActiveTime() {
+      const start = $("activeStartSelect").value;
+      const end = $("activeEndSelect").value;
+      $("activeTimeOutput").innerHTML = `<span class="active-time-label">Active Time</span>${start}–${end}`;
     }
 
     function isEnglishJobs() {
@@ -2689,6 +2742,10 @@
         subJobs: selectedSubJobs,
         topics: selectedTopics,
         jobEnglish: $("jobEnglishToggle").checked,
+        activeTime: {
+          start: $("activeStartSelect").value,
+          end: $("activeEndSelect").value
+        },
         imageState,
         colors,
         sizes,
@@ -2725,6 +2782,10 @@
       if (Array.isArray(data.subJobs)) selectedSubJobs = data.subJobs;
       if (Array.isArray(data.topics)) selectedTopics = data.topics;
       if (typeof data.jobEnglish === "boolean") $("jobEnglishToggle").checked = data.jobEnglish;
+      if (data.activeTime) {
+        if (data.activeTime.start) $("activeStartSelect").value = data.activeTime.start;
+        if (data.activeTime.end) $("activeEndSelect").value = data.activeTime.end;
+      }
       if (data.imageState) imageState = { ...imageState, ...data.imageState };
       Object.entries(data.colors || {}).forEach(([id, value]) => { if ($(id)) $(id).value = value; });
       Object.entries(data.sizes || {}).forEach(([key, value]) => { if ($(`${key}Number`)) setTextSize(key, value); });
@@ -2834,6 +2895,10 @@
       renderMainJobSelect();
       renderSubJobs();
       syncJobs();
+    });
+
+    ["activeStartSelect", "activeEndSelect"].forEach((id) => {
+      $(id).addEventListener("change", syncActiveTime);
     });
 
     $("themeSelect").addEventListener("change", (event) => {
@@ -3082,6 +3147,7 @@
     renderPalettes();
     setupCollapsibleSections();
     setupFontSelects();
+    setupActiveTimeSelects();
     renderStyleOptions();
     applyCoverStyle($("styleSelect").value);
     renderMainJobSelect();
