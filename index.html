@@ -1958,7 +1958,8 @@
           <select id="styleCategorySelect">
             <option value="mens">メンズ / 30</option>
             <option value="ladies">レディース / 30</option>
-            <option value="free">フリースタイル</option>
+            <option value="freeMens">フリー メンズ / 30</option>
+            <option value="freeLadies">フリー レディース / 30</option>
           </select>
         </div>
         <div class="field">
@@ -2589,18 +2590,25 @@
         accent: stylePalettes[index % stylePalettes.length]
       }));
     }
+    function buildFreeStylePresets(names, category, layouts, feminine) {
+      return names.map((name, index) => ({
+        key: `${category}-${String(index + 1).padStart(2, "0")}`,
+        label: `${String(index + 1).padStart(2, "0")} Free ${name}`,
+        layout: layouts[index % layouts.length],
+        variant: `variant-${String(index + 1).padStart(2, "0")}`,
+        magazine: "FFXIV",
+        archive: `Free ${name}`,
+        accent: stylePalettes[index % stylePalettes.length],
+        freeIndex: index,
+        freeFeminine: feminine
+      }));
+    }
+
     const coverStyles = {
       mens: buildStylePresets(mensStyleNames, "mens", mensLayouts),
       ladies: buildStylePresets(ladiesStyleNames, "ladies", ladiesLayouts),
-      free: [{
-        key: "free-01",
-        label: "01 フリースタイル",
-        layout: "visque",
-        variant: "variant-01",
-        magazine: "FFXIV",
-        archive: "Free Layout",
-        accent: ["#ff4f7b", "#37d5c5"]
-      }]
+      freeMens: buildFreeStylePresets(mensStyleNames, "freeMens", mensLayouts, false),
+      freeLadies: buildFreeStylePresets(ladiesStyleNames, "freeLadies", ladiesLayouts, true)
     };
     let currentStyleCategory = "mens";
     const freeElements = {
@@ -2629,6 +2637,99 @@
       state.direction = "horizontal";
       state.rotation = 0;
     });
+
+    function createFreeLayoutPreset(index, feminine) {
+      const templates = feminine ? [
+        {},
+        {
+          title: { x: 50, y: 10, width: 82 },
+          topics: { x: 78, y: 36, width: 30 },
+          job: { x: 22, y: 52, width: 38 },
+          name: { x: 66, y: 84, width: 58 }
+        },
+        {
+          title: { x: 12, y: 28, width: 48, direction: "vertical-rl" },
+          archive: { x: 72, y: 12, width: 42 },
+          headline: { x: 78, y: 70, width: 36, direction: "vertical-lr" },
+          name: { x: 42, y: 86, width: 60 }
+        },
+        {
+          title: { x: 50, y: 17, width: 92 },
+          topics: { x: 18, y: 42, width: 32 },
+          job: { x: 78, y: 55, width: 36 },
+          headline: { x: 50, y: 76, width: 66 },
+          name: { x: 50, y: 86, width: 72 }
+        },
+        {
+          title: { x: 48, y: 13, width: 86, direction: "diagonal-up", rotation: -3 },
+          archive: { x: 68, y: 23, width: 44 },
+          topics: { x: 20, y: 38, width: 30 },
+          job: { x: 75, y: 54, width: 40 },
+          name: { x: 38, y: 86, width: 62, direction: "diagonal-down", rotation: 2 }
+        },
+        {
+          issue: { x: 78, y: 5, width: 34 },
+          title: { x: 26, y: 14, width: 48 },
+          archive: { x: 75, y: 16, width: 40 },
+          topics: { x: 75, y: 34, width: 34 },
+          job: { x: 24, y: 53, width: 42 },
+          name: { x: 70, y: 86, width: 52 }
+        }
+      ] : [
+        {},
+        {
+          title: { x: 30, y: 13, width: 56 },
+          archive: { x: 74, y: 19, width: 38 },
+          topics: { x: 20, y: 38, width: 30 },
+          job: { x: 77, y: 51, width: 38 },
+          name: { x: 28, y: 87, width: 52 }
+        },
+        {
+          title: { x: 10, y: 29, width: 44, direction: "vertical-rl" },
+          issue: { x: 75, y: 5, width: 38 },
+          archive: { x: 72, y: 14, width: 42 },
+          topics: { x: 78, y: 34, width: 28 },
+          job: { x: 73, y: 56, width: 42 },
+          name: { x: 42, y: 86, width: 62 }
+        },
+        {
+          title: { x: 50, y: 16, width: 92 },
+          topics: { x: 16, y: 45, width: 28 },
+          job: { x: 82, y: 48, width: 32 },
+          headline: { x: 50, y: 76, width: 62 },
+          name: { x: 50, y: 86, width: 68 }
+        },
+        {
+          title: { x: 50, y: 13, width: 88, direction: "diagonal-up", rotation: -5 },
+          archive: { x: 72, y: 23, width: 40 },
+          topics: { x: 18, y: 36, width: 30 },
+          job: { x: 78, y: 55, width: 38 },
+          name: { x: 34, y: 86, width: 58, direction: "diagonal-down", rotation: 3 }
+        },
+        {
+          issue: { x: 80, y: 5, width: 32 },
+          title: { x: 25, y: 13, width: 46 },
+          archive: { x: 74, y: 16, width: 42 },
+          topics: { x: 22, y: 38, width: 32 },
+          job: { x: 76, y: 52, width: 40 },
+          headline: { x: 25, y: 76, width: 42 },
+          name: { x: 72, y: 86, width: 52 }
+        }
+      ];
+      const template = templates[index % templates.length];
+      const variation = Math.floor(index / templates.length) - 2;
+      return Object.fromEntries(Object.entries(freeLayoutDefaults).map(([key, defaults], elementIndex) => {
+        const state = { ...defaults, ...(template[key] || {}) };
+        state.x = Math.max(2, Math.min(98, state.x + variation * (((elementIndex + index) % 3) - 1) * 1.4));
+        state.y = Math.max(2, Math.min(98, state.y + variation * (((elementIndex * 2 + index) % 3) - 1) * 0.8));
+        state.rotation += variation * (feminine ? 1.2 : 1);
+        return [key, state];
+      }));
+    }
+
+    function isFreeLayoutCategory() {
+      return currentStyleCategory === "freeMens" || currentStyleCategory === "freeLadies";
+    }
     let freeLayoutState = Object.fromEntries(
       Object.entries(freeLayoutDefaults).map(([key, value]) => [key, { ...value }])
     );
@@ -2896,6 +2997,9 @@
 
     function applyCoverStyle(styleKey, updateText = true) {
       const style = getCurrentStyle(styleKey);
+      if (isFreeLayoutCategory() && updateText && Number.isInteger(style.freeIndex)) {
+        freeLayoutState = createFreeLayoutPreset(style.freeIndex, style.freeFeminine);
+      }
       cover.classList.remove(
         "style-visque", "style-simple", "style-leon", "style-fashion", "style-gq", "style-minimal",
         "style-ladies-cover", "style-beauty", "style-soft", "style-luxe", "style-cute", "style-mode",
@@ -2914,7 +3018,7 @@
     }
 
     function applyFreeLayout() {
-      const enabled = currentStyleCategory === "free";
+      const enabled = isFreeLayoutCategory();
       cover.classList.toggle("is-free-layout", enabled);
       Object.entries(freeElements).forEach(([key, id]) => {
         const element = $(id);
@@ -3435,20 +3539,20 @@
     });
 
     $("freeDirectionSelect").addEventListener("change", (event) => {
-      if (currentStyleCategory !== "free") return;
+      if (!isFreeLayoutCategory()) return;
       freeLayoutState[selectedFreeElement].direction = event.target.value;
       applyFreeLayout();
     });
 
     $("freeRotateRange").addEventListener("input", (event) => {
-      if (currentStyleCategory !== "free") return;
+      if (!isFreeLayoutCategory()) return;
       freeLayoutState[selectedFreeElement].rotation = Number(event.target.value);
       applyFreeLayout();
     });
 
     [["freeXRange", "x"], ["freeYRange", "y"], ["freeWidthRange", "width"]].forEach(([id, key]) => {
       $(id).addEventListener("input", (event) => {
-        if (currentStyleCategory !== "free") return;
+        if (!isFreeLayoutCategory()) return;
         freeLayoutState[selectedFreeElement][key] = Number(event.target.value);
         applyFreeLayout();
       });
@@ -3792,7 +3896,7 @@
     $("layerForwardBtn").addEventListener("click", () => moveSelectedLayer(1));
 
     cover.addEventListener("pointerdown", (event) => {
-      const freeTarget = currentStyleCategory === "free"
+      const freeTarget = isFreeLayoutCategory()
         ? event.target.closest?.("[data-free-key]")
         : null;
       if (freeTarget) {
