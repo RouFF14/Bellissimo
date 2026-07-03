@@ -2261,6 +2261,12 @@
 
       <section class="section" id="imageControlsSection">
         <div class="section-title">画像位置 <span id="imageLayerLabel">画像未選択</span></div>
+        <div class="field">
+          <label for="layerSelect">編集する画像</label>
+          <select id="layerSelect" disabled>
+            <option value="">画像未選択</option>
+          </select>
+        </div>
         <div class="range-row">
           <span>拡大</span>
           <input id="scaleRange" type="range" min="0.15" max="3.5" step="0.01" value="1">
@@ -2328,6 +2334,16 @@
             <label for="layerFrameWidth">枠の太さ <span id="layerFrameWidthValue">6px</span></label>
             <input id="layerFrameWidth" type="range" min="1" max="24" step="1" value="6">
           </div>
+        </div>
+        <div class="range-row">
+          <span>画像中心X</span>
+          <input id="layerCropX" type="range" min="0" max="100" step="1" value="50">
+          <span id="layerCropXValue">50%</span>
+        </div>
+        <div class="range-row">
+          <span>画像中心Y</span>
+          <input id="layerCropY" type="range" min="0" max="100" step="1" value="50">
+          <span id="layerCropYValue">50%</span>
         </div>
         <div class="two">
           <button id="layerBackBtn" type="button">背面へ</button>
@@ -2570,7 +2586,9 @@
       shape: "rectangle",
       frame: "none",
       frameColor: "#ffffff",
-      frameWidth: 6
+      frameWidth: 6,
+      cropX: 50,
+      cropY: 50
     };
     const logoState = { x: 50, y: 16, size: 34, opacity: 0.9 };
     const presetStorageKey = "bellissimo-cover-preset-v1";
@@ -2802,6 +2820,7 @@
         picture.src = image.src;
         picture.alt = "";
         picture.draggable = false;
+        picture.style.objectPosition = `${state.cropX}% ${state.cropY}%`;
         layer.appendChild(picture);
         imageLayerContainer.appendChild(layer);
       });
@@ -2859,7 +2878,7 @@
       $("layerBackBtn").disabled = !isOverlay || currentImageIndex <= 1;
       $("layerForwardBtn").disabled = !isOverlay || currentImageIndex >= uploadedImages.length - 1;
       $("removeImageBtn").disabled = !hasSelection;
-      ["layerShapeSelect", "layerFrameSelect", "layerFrameColor", "layerFrameWidth"].forEach((id) => {
+      ["layerShapeSelect", "layerFrameSelect", "layerFrameColor", "layerFrameWidth", "layerCropX", "layerCropY"].forEach((id) => {
         $(id).disabled = !isOverlay;
       });
       if (isOverlay) {
@@ -2868,8 +2887,12 @@
         $("layerFrameSelect").value = imageState.frame;
         $("layerFrameColor").value = imageState.frameColor;
         $("layerFrameWidth").value = imageState.frameWidth;
+        $("layerCropX").value = imageState.cropX;
+        $("layerCropY").value = imageState.cropY;
       }
       $("layerFrameWidthValue").textContent = `${isOverlay ? imageState.frameWidth : 0}px`;
+      $("layerCropXValue").textContent = `${isOverlay ? imageState.cropX : 50}%`;
+      $("layerCropYValue").textContent = `${isOverlay ? imageState.cropY : 50}%`;
     }
 
     function setStatus(text) {
@@ -2944,6 +2967,25 @@
         button.addEventListener("click", () => selectImage(index));
         strip.appendChild(button);
       });
+      const selector = $("layerSelect");
+      selector.replaceChildren();
+      if (!uploadedImages.length) {
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "画像未選択";
+        selector.appendChild(emptyOption);
+        selector.disabled = true;
+      } else {
+        uploadedImages.forEach((image, index) => {
+          const role = index === 0 ? "表紙背景" : "追加レイヤー";
+          const option = document.createElement("option");
+          option.value = String(index);
+          option.textContent = `${index + 1}枚目 / ${role} / ${image.name}`;
+          selector.appendChild(option);
+        });
+        selector.disabled = false;
+        selector.value = String(currentImageIndex);
+      }
     }
 
     function selectImage(index) {
@@ -3384,6 +3426,11 @@
       syncImage();
     });
 
+    $("layerSelect").addEventListener("change", (event) => {
+      const index = Number(event.target.value);
+      if (Number.isInteger(index)) selectImage(index);
+    });
+
     $("layerShapeSelect").addEventListener("change", (event) => {
       if (currentImageIndex <= 0) return;
       imageState.shape = event.target.value;
@@ -3408,17 +3455,30 @@
       syncImage();
     });
 
+    $("layerCropX").addEventListener("input", (event) => {
+      if (currentImageIndex <= 0) return;
+      imageState.cropX = Number(event.target.value);
+      syncImage();
+    });
+
+    $("layerCropY").addEventListener("input", (event) => {
+      if (currentImageIndex <= 0) return;
+      imageState.cropY = Number(event.target.value);
+      syncImage();
+    });
+
     $("removeImageBtn").addEventListener("click", () => {
       if (currentImageIndex < 0 || !uploadedImages[currentImageIndex]) return;
-      uploadedImages.splice(currentImageIndex, 1);
+      const removedIndex = currentImageIndex;
+      uploadedImages.splice(removedIndex, 1);
+      currentImageIndex = -1;
       if (!uploadedImages.length) {
-        currentImageIndex = -1;
         imageState = { x: 0, y: 0, scale: 1, rotate: 0 };
         renderImageStrip();
         syncImage();
         return;
       }
-      selectImage(Math.min(currentImageIndex, uploadedImages.length - 1));
+      selectImage(Math.min(removedIndex, uploadedImages.length - 1));
     });
 
     function moveSelectedLayer(direction) {
