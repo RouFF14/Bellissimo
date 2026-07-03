@@ -699,6 +699,29 @@
       display: none;
     }
 
+    .cover.is-free-layout .free-positioned {
+      position: absolute !important;
+      left: var(--free-x, 50%) !important;
+      top: var(--free-y, 50%) !important;
+      width: var(--free-width, 50%) !important;
+      max-width: none !important;
+      margin: 0 !important;
+      transform: translate(-50%, -50%) rotate(var(--free-rotation, 0deg)) !important;
+      box-sizing: border-box;
+      z-index: 8;
+      cursor: move;
+      pointer-events: auto;
+    }
+
+    .cover.is-free-layout .free-positioned.is-free-selected {
+      outline: 1px dashed rgba(255,255,255,0.9);
+      outline-offset: 5px;
+    }
+
+    .cover.is-exporting .free-positioned.is-free-selected {
+      outline: 0;
+    }
+
     .placeholder-art {
       position: absolute;
       inset: 0;
@@ -1935,6 +1958,7 @@
           <select id="styleCategorySelect">
             <option value="mens">メンズ / 30</option>
             <option value="ladies">レディース / 30</option>
+            <option value="free">フリースタイル</option>
           </select>
         </div>
         <div class="field">
@@ -2278,6 +2302,55 @@
         <div class="chip-grid" id="topicChips"></div>
       </section>
 
+      <section class="section" id="freeLayoutSection">
+        <div class="section-title">フリースタイル配置</div>
+        <div class="field">
+          <label for="freeElementSelect">移動する文字要素</label>
+          <select id="freeElementSelect">
+            <option value="issue">発行情報</option>
+            <option value="title">表紙タイトル</option>
+            <option value="archive">サブタイトル</option>
+            <option value="topics">トピック</option>
+            <option value="job">ジョブ欄</option>
+            <option value="headline">キャッチコピー</option>
+            <option value="name">名前</option>
+            <option value="meta">ワールド</option>
+            <option value="copyright">権利表記</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="freeDirectionSelect">文字方向</label>
+          <select id="freeDirectionSelect">
+            <option value="horizontal">横書き</option>
+            <option value="vertical-rl">縦書き・右から</option>
+            <option value="vertical-lr">縦書き・左から</option>
+            <option value="diagonal-up">斜め・右上がり</option>
+            <option value="diagonal-down">斜め・右下がり</option>
+          </select>
+        </div>
+        <div class="range-row">
+          <span>X</span>
+          <input id="freeXRange" type="range" min="0" max="100" step="1" value="50">
+          <span id="freeXValue">50</span>
+        </div>
+        <div class="range-row">
+          <span>Y</span>
+          <input id="freeYRange" type="range" min="0" max="100" step="1" value="50">
+          <span id="freeYValue">50</span>
+        </div>
+        <div class="range-row">
+          <span>横幅</span>
+          <input id="freeWidthRange" type="range" min="10" max="100" step="1" value="50">
+          <span id="freeWidthValue">50%</span>
+        </div>
+        <div class="range-row">
+          <span>角度</span>
+          <input id="freeRotateRange" type="range" min="-180" max="180" step="1" value="0">
+          <span id="freeRotateValue">0°</span>
+        </div>
+        <div class="hint">フリースタイル選択中は、表紙上の文字を直接ドラッグできます。</div>
+      </section>
+
       <section class="section" id="imageControlsSection">
         <div class="section-title">画像位置 <span id="imageLayerLabel">画像未選択</span></div>
         <div class="field">
@@ -2431,7 +2504,7 @@
             </div>
             <div class="cover-mid">
               <div class="topics" id="topicsOutput"></div>
-              <div class="side-copy">
+              <div class="side-copy" id="jobPanel">
                 <div class="role-label">Main Job</div>
                 <div class="job-name" id="jobOutput">Astrologian</div>
                 <div class="sub-jobs" id="subJobsOutput"></div>
@@ -2442,11 +2515,11 @@
             <div class="bottom">
               <div class="subtitle" id="subtitleOutput">夜空を着こなす、光の編集者</div>
               <h2 class="name" id="nameOutput">LUMINOUS</h2>
-              <div class="meta">
+              <div class="meta" id="metaOutput">
                 <span id="worldOutput">Meteor / Shinryu</span>
                 <span>Community Cover</span>
               </div>
-              <div class="fineprint">FINAL FANTASY XIV @SQUARE ENIX</div>
+              <div class="fineprint" id="copyrightOutput">FINAL FANTASY XIV @SQUARE ENIX</div>
             </div>
           </div>
         </article>
@@ -2518,9 +2591,48 @@
     }
     const coverStyles = {
       mens: buildStylePresets(mensStyleNames, "mens", mensLayouts),
-      ladies: buildStylePresets(ladiesStyleNames, "ladies", ladiesLayouts)
+      ladies: buildStylePresets(ladiesStyleNames, "ladies", ladiesLayouts),
+      free: [{
+        key: "free-01",
+        label: "01 フリースタイル",
+        layout: "visque",
+        variant: "variant-01",
+        magazine: "FFXIV",
+        archive: "Free Layout",
+        accent: ["#ff4f7b", "#37d5c5"]
+      }]
     };
     let currentStyleCategory = "mens";
+    const freeElements = {
+      issue: "issueOutput",
+      title: "magazineOutput",
+      archive: "archiveOutput",
+      topics: "topicsOutput",
+      job: "jobPanel",
+      headline: "subtitleOutput",
+      name: "nameOutput",
+      meta: "metaOutput",
+      copyright: "copyrightOutput"
+    };
+    const freeLayoutDefaults = {
+      issue: { x: 20, y: 5, width: 34 },
+      title: { x: 50, y: 12, width: 88 },
+      archive: { x: 50, y: 19, width: 52 },
+      topics: { x: 17, y: 34, width: 28 },
+      job: { x: 78, y: 50, width: 38 },
+      headline: { x: 24, y: 79, width: 44 },
+      name: { x: 28, y: 87, width: 52 },
+      meta: { x: 50, y: 94, width: 90 },
+      copyright: { x: 78, y: 98, width: 38 }
+    };
+    Object.values(freeLayoutDefaults).forEach((state) => {
+      state.direction = "horizontal";
+      state.rotation = 0;
+    });
+    let freeLayoutState = Object.fromEntries(
+      Object.entries(freeLayoutDefaults).map(([key, value]) => [key, { ...value }])
+    );
+    let selectedFreeElement = "title";
 
     const topics = ["SS撮影", "ミラプリ", "ハウジング", "地図", "レイド", "フレンド募集", "クラフター", "ギャザラー", "PvP", "ロールプレイ", "絶", "零式"];
     let selectedTopics = ["SS撮影", "ミラプリ", "ハウジング", "地図"];
@@ -2798,6 +2910,43 @@
         $("archiveInput").value = style.archive;
         syncProfile();
       }
+      applyFreeLayout();
+    }
+
+    function applyFreeLayout() {
+      const enabled = currentStyleCategory === "free";
+      cover.classList.toggle("is-free-layout", enabled);
+      Object.entries(freeElements).forEach(([key, id]) => {
+        const element = $(id);
+        const state = freeLayoutState[key];
+        element.dataset.freeKey = key;
+        element.classList.toggle("free-positioned", enabled);
+        element.classList.toggle("is-free-selected", enabled && key === selectedFreeElement);
+        element.style.setProperty("--free-x", `${state.x}%`);
+        element.style.setProperty("--free-y", `${state.y}%`);
+        element.style.setProperty("--free-width", `${state.width}%`);
+        const directionRotation = state.direction === "diagonal-up"
+          ? -15
+          : (state.direction === "diagonal-down" ? 15 : 0);
+        element.style.setProperty("--free-rotation", `${state.rotation + directionRotation}deg`);
+        element.style.writingMode = enabled
+          ? (state.direction === "vertical-rl" || state.direction === "vertical-lr" ? state.direction : "horizontal-tb")
+          : "";
+      });
+      ["freeElementSelect", "freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeRotateRange"].forEach((id) => {
+        $(id).disabled = !enabled;
+      });
+      const selected = freeLayoutState[selectedFreeElement];
+      $("freeElementSelect").value = selectedFreeElement;
+      $("freeXRange").value = selected.x;
+      $("freeYRange").value = selected.y;
+      $("freeWidthRange").value = selected.width;
+      $("freeDirectionSelect").value = selected.direction;
+      $("freeRotateRange").value = selected.rotation;
+      $("freeXValue").textContent = Math.round(selected.x);
+      $("freeYValue").textContent = Math.round(selected.y);
+      $("freeWidthValue").textContent = `${Math.round(selected.width)}%`;
+      $("freeRotateValue").textContent = `${Math.round(selected.rotation)}°`;
     }
 
     function renderTopics() {
@@ -3121,6 +3270,8 @@
           start: $("activeStartSelect").value,
           end: $("activeEndSelect").value
         },
+        freeLayout: freeLayoutState,
+        selectedFreeElement,
         imageState,
         colors,
         sizes,
@@ -3162,6 +3313,14 @@
         if (data.activeTime.end) $("activeEndSelect").value = data.activeTime.end;
       }
       if (data.imageState) imageState = { ...imageState, ...data.imageState };
+      if (data.freeLayout) {
+        Object.entries(freeLayoutDefaults).forEach(([key, defaults]) => {
+          freeLayoutState[key] = { ...defaults, ...(data.freeLayout[key] || {}) };
+        });
+      }
+      if (data.selectedFreeElement && freeElements[data.selectedFreeElement]) {
+        selectedFreeElement = data.selectedFreeElement;
+      }
       Object.entries(data.colors || {}).forEach(([id, value]) => { if ($(id)) $(id).value = value; });
       Object.entries(data.sizes || {}).forEach(([key, value]) => { if ($(`${key}Number`)) setTextSize(key, value); });
       if (data.fonts) {
@@ -3268,6 +3427,31 @@
       currentStyleCategory = event.target.value;
       renderStyleOptions();
       applyCoverStyle($("styleSelect").value);
+    });
+
+    $("freeElementSelect").addEventListener("change", (event) => {
+      selectedFreeElement = event.target.value;
+      applyFreeLayout();
+    });
+
+    $("freeDirectionSelect").addEventListener("change", (event) => {
+      if (currentStyleCategory !== "free") return;
+      freeLayoutState[selectedFreeElement].direction = event.target.value;
+      applyFreeLayout();
+    });
+
+    $("freeRotateRange").addEventListener("input", (event) => {
+      if (currentStyleCategory !== "free") return;
+      freeLayoutState[selectedFreeElement].rotation = Number(event.target.value);
+      applyFreeLayout();
+    });
+
+    [["freeXRange", "x"], ["freeYRange", "y"], ["freeWidthRange", "width"]].forEach(([id, key]) => {
+      $(id).addEventListener("input", (event) => {
+        if (currentStyleCategory !== "free") return;
+        freeLayoutState[selectedFreeElement][key] = Number(event.target.value);
+        applyFreeLayout();
+      });
     });
 
     $("fitSelect").addEventListener("change", (event) => {
@@ -3608,15 +3792,40 @@
     $("layerForwardBtn").addEventListener("click", () => moveSelectedLayer(1));
 
     cover.addEventListener("pointerdown", (event) => {
+      const freeTarget = currentStyleCategory === "free"
+        ? event.target.closest?.("[data-free-key]")
+        : null;
+      if (freeTarget) {
+        selectedFreeElement = freeTarget.dataset.freeKey;
+        applyFreeLayout();
+        const state = freeLayoutState[selectedFreeElement];
+        cover.setPointerCapture(event.pointerId);
+        drag = {
+          type: "free",
+          id: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          x: state.x,
+          y: state.y
+        };
+        return;
+      }
       const layer = event.target.closest?.(".cover-overlay-layer");
       if (layer) selectImage(Number(layer.dataset.imageIndex));
       if (currentImageIndex < 0 || !uploadedImages[currentImageIndex]) return;
       cover.setPointerCapture(event.pointerId);
-      drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: imageState.x, y: imageState.y };
+      drag = { type: "image", id: event.pointerId, startX: event.clientX, startY: event.clientY, x: imageState.x, y: imageState.y };
     });
 
     cover.addEventListener("pointermove", (event) => {
       if (!drag || drag.id !== event.pointerId) return;
+      if (drag.type === "free") {
+        const rect = cover.getBoundingClientRect();
+        freeLayoutState[selectedFreeElement].x = Math.max(0, Math.min(100, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
+        freeLayoutState[selectedFreeElement].y = Math.max(0, Math.min(100, drag.y + ((event.clientY - drag.startY) / rect.height) * 100));
+        applyFreeLayout();
+        return;
+      }
       imageState.x = Math.max(-260, Math.min(260, drag.x + event.clientX - drag.startX));
       imageState.y = Math.max(-260, Math.min(260, drag.y + event.clientY - drag.startY));
       syncImage();
