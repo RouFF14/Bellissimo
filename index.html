@@ -710,12 +710,13 @@
 
     .cover.is-free-layout .free-positioned {
       position: absolute !important;
-      left: var(--free-x, 50%) !important;
-      top: var(--free-y, 50%) !important;
-      width: var(--free-width, 50%) !important;
+      left: var(--free-left, 0px) !important;
+      top: var(--free-top, 0px) !important;
+      width: var(--free-width, 270px) !important;
       max-width: none !important;
       margin: 0 !important;
-      transform: translate(-50%, -50%) rotate(var(--free-rotation, 0deg)) scale(var(--free-scale, 1)) !important;
+      transform: rotate(var(--free-rotation, 0deg)) scale(var(--free-scale, 1)) !important;
+      transform-origin: center center;
       box-sizing: border-box;
       z-index: 8;
       cursor: move;
@@ -2907,6 +2908,7 @@
       setText("quoteInput", "quoteOutput");
       syncActiveTime();
       syncJobs();
+      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
     }
 
     function setupActiveTimeSelects() {
@@ -3060,6 +3062,8 @@
     function applyFreeLayout() {
       const enabled = isFreeLayoutCategory();
       cover.classList.toggle("is-free-layout", enabled);
+      const layerWidth = freeTextLayer.clientWidth || cover.clientWidth;
+      const layerHeight = freeTextLayer.clientHeight || cover.clientHeight;
       Object.entries(freeElements).forEach(([key, id]) => {
         const element = $(id);
         const state = freeLayoutState[key];
@@ -3072,9 +3076,7 @@
         element.dataset.freeKey = key;
         element.classList.toggle("free-positioned", enabled);
         element.classList.toggle("is-free-selected", enabled && key === selectedFreeElement);
-        element.style.setProperty("--free-x", `${state.x}%`);
-        element.style.setProperty("--free-y", `${state.y}%`);
-        element.style.setProperty("--free-width", `${state.width}%`);
+        element.style.setProperty("--free-width", `${(state.width / 100) * layerWidth}px`);
         element.style.setProperty("--free-scale", state.scale);
         const directionRotation = state.direction === "diagonal-up"
           ? -15
@@ -3083,6 +3085,12 @@
         element.style.writingMode = enabled
           ? (state.direction === "vertical-rl" || state.direction === "vertical-lr" ? state.direction : "horizontal-tb")
           : "";
+        if (enabled) {
+          const left = (state.x / 100) * layerWidth - element.offsetWidth / 2;
+          const top = (state.y / 100) * layerHeight - element.offsetHeight / 2;
+          element.style.setProperty("--free-left", `${left}px`);
+          element.style.setProperty("--free-top", `${top}px`);
+        }
       });
       ["freeElementSelect", "freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeScaleRange", "freeRotateRange"].forEach((id) => {
         $(id).disabled = !enabled;
@@ -3292,6 +3300,7 @@
       $(`${key}Range`).value = value;
       $(`${key}Number`).value = value;
       root.style.setProperty(config.cssVar, `${value}px`);
+      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
     }
 
     function applyTextSizes() {
@@ -3389,6 +3398,7 @@
       root.style.setProperty("--title-font-family", $("titleFontSelect").value);
       root.style.setProperty("--name-font-family", $("nameFontSelect").value);
       root.style.setProperty("--body-font-family", $("bodyFontSelect").value);
+      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
     }
 
     function applyVisibility() {
@@ -3985,7 +3995,10 @@
     });
 
     window.addEventListener("pointerup", () => { drag = null; });
-    window.addEventListener("resize", syncImage);
+    window.addEventListener("resize", () => {
+      syncImage();
+      applyFreeLayout();
+    });
     window.addEventListener("beforeunload", () => {
       uploadedImages.forEach((image) => {
         if (image.src?.startsWith("blob:")) URL.revokeObjectURL(image.src);
@@ -4050,6 +4063,7 @@
         cover.style.width = originalWidth;
         cover.style.height = originalHeight;
         syncImage();
+        applyFreeLayout();
       }
     });
 
@@ -4069,6 +4083,7 @@
     syncLogo();
     applyVisibility();
     syncImage();
+    document.fonts.ready.then(applyFreeLayout);
     if (location.hash.startsWith("#preset=")) {
       try {
         applyPreset(decodePreset(location.hash.slice(8)));
