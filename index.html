@@ -2722,7 +2722,7 @@
         const state = { ...defaults, ...(template[key] || {}) };
         state.x = Math.max(2, Math.min(98, state.x + variation * (((elementIndex + index) % 3) - 1) * 1.4));
         state.y = Math.max(2, Math.min(98, state.y + variation * (((elementIndex * 2 + index) % 3) - 1) * 0.8));
-        state.rotation += index === 0 ? 0 : variation * (feminine ? 1.2 : 1);
+        state.rotation = 0;
         return [key, state];
       }));
     }
