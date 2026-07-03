@@ -715,7 +715,7 @@
       width: var(--free-width, 270px) !important;
       max-width: none !important;
       margin: 0 !important;
-      transform: rotate(var(--free-rotation, 0deg)) scale(var(--free-scale, 1)) !important;
+      transform: rotate(var(--free-rotation, 0deg)) !important;
       transform-origin: center center;
       box-sizing: border-box;
       z-index: 8;
@@ -3077,7 +3077,6 @@
         element.classList.toggle("free-positioned", enabled);
         element.classList.toggle("is-free-selected", enabled && key === selectedFreeElement);
         element.style.setProperty("--free-width", `${(state.width / 100) * layerWidth}px`);
-        element.style.setProperty("--free-scale", state.scale);
         const directionRotation = state.direction === "diagonal-up"
           ? -15
           : (state.direction === "diagonal-down" ? 15 : 0);
@@ -3085,6 +3084,7 @@
         element.style.writingMode = enabled
           ? (state.direction === "vertical-rl" || state.direction === "vertical-lr" ? state.direction : "horizontal-tb")
           : "";
+        applyFreeFontScale(key, element, state.scale, enabled);
         if (enabled) {
           const left = (state.x / 100) * layerWidth - element.offsetWidth / 2;
           const top = (state.y / 100) * layerHeight - element.offsetHeight / 2;
@@ -3108,6 +3108,50 @@
       $("freeWidthValue").textContent = `${Math.round(selected.width)}%`;
       $("freeScaleValue").textContent = Number(selected.scale).toFixed(2);
       $("freeRotateValue").textContent = `${Math.round(selected.rotation)}°`;
+    }
+
+    function applyFreeFontScale(key, element, scale, enabled) {
+      const clearScaled = (rootElement) => {
+        if (rootElement.dataset.freeScaled === "true") {
+          rootElement.style.removeProperty("font-size");
+          delete rootElement.dataset.freeScaled;
+        }
+        rootElement.querySelectorAll('[data-free-scaled="true"]').forEach((node) => {
+          node.style.removeProperty("font-size");
+          delete node.dataset.freeScaled;
+        });
+      };
+      clearScaled(element);
+      if (!enabled) return;
+      const setSize = (node, size) => {
+        if (!node) return;
+        node.style.fontSize = `${size * scale}px`;
+        node.dataset.freeScaled = "true";
+      };
+      const sizeValues = {
+        meta: Number($("metaSizeNumber").value),
+        title: Number($("titleSizeNumber").value),
+        topic: Number($("topicSizeNumber").value),
+        job: Number($("jobSizeNumber").value),
+        quote: Number($("quoteSizeNumber").value),
+        headline: Number($("headlineSizeNumber").value),
+        name: Number($("nameSizeNumber").value),
+        copyright: Number($("copyrightSizeNumber").value)
+      };
+      if (key === "issue" || key === "archive" || key === "meta") setSize(element, sizeValues.meta);
+      if (key === "title") setSize(element, sizeValues.title);
+      if (key === "topics") {
+        setSize(element, sizeValues.topic);
+        element.querySelectorAll("span").forEach((node) => setSize(node, sizeValues.topic));
+      }
+      if (key === "job") {
+        element.querySelectorAll(".role-label, .sub-jobs, .active-time").forEach((node) => setSize(node, sizeValues.meta));
+        setSize(element.querySelector(".job-name"), sizeValues.job);
+        setSize(element.querySelector(".quote"), sizeValues.quote);
+      }
+      if (key === "headline") setSize(element, sizeValues.headline);
+      if (key === "name") setSize(element, sizeValues.name);
+      if (key === "copyright") setSize(element, sizeValues.copyright);
     }
 
     function renderTopics() {
@@ -4035,8 +4079,9 @@
         cover.style.width = `${currentRect.width}px`;
         cover.style.height = `${currentRect.height}px`;
         syncImage();
-        applyFreeLayout();
         await document.fonts.ready;
+        applyFreeLayout();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
         const canvas = await html2canvas(cover, {
           scale: Number($("exportQualitySelect").value || 3),
           backgroundColor: null,
