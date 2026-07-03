@@ -624,12 +624,31 @@
       cursor: move;
     }
 
-    .cover-overlay-layer > img {
-      width: 100%;
-      height: 100%;
+    .layer-image-viewport {
+      position: absolute;
+      inset: var(--layer-frame-width, 0px);
+      overflow: hidden;
+      clip-path: var(--layer-clip, inset(0));
+    }
+
+    .cover-overlay-layer.frame-none .layer-image-viewport {
+      inset: 0;
+    }
+
+    .cover-overlay-layer.frame-polaroid .layer-image-viewport {
+      bottom: calc(var(--layer-frame-width, 6px) * 3.2);
+    }
+
+    .layer-image-viewport > img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 125%;
+      height: 125%;
+      max-width: none;
+      max-height: none;
       display: block;
       object-fit: cover;
-      clip-path: var(--layer-clip, inset(0));
       filter: var(--img-filter, saturate(1.08) contrast(1.02));
       pointer-events: none;
     }
@@ -1862,7 +1881,7 @@
         right: 8px;
         bottom: max(8px, env(safe-area-inset-bottom));
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 8px;
         padding: 8px;
         border: 1px solid rgba(255,255,255,0.18);
@@ -2337,19 +2356,23 @@
         </div>
         <div class="range-row">
           <span>画像中心X</span>
-          <input id="layerCropX" type="range" min="0" max="100" step="1" value="50">
+          <input id="layerCropX" type="range" min="-100" max="100" step="1" value="50">
           <span id="layerCropXValue">50%</span>
         </div>
         <div class="range-row">
           <span>画像中心Y</span>
-          <input id="layerCropY" type="range" min="0" max="100" step="1" value="50">
+          <input id="layerCropY" type="range" min="-100" max="100" step="1" value="50">
           <span id="layerCropYValue">50%</span>
         </div>
         <div class="two">
           <button id="layerBackBtn" type="button">背面へ</button>
           <button id="layerForwardBtn" type="button">前面へ</button>
         </div>
-        <button id="removeImageBtn" type="button">選択画像を削除</button>
+        <input id="replaceImageInput" type="file" accept="image/*" hidden>
+        <div class="two">
+          <button id="replaceImageBtn" type="button">選択画像を入れ替え</button>
+          <button id="removeImageBtn" type="button">選択画像を削除</button>
+        </div>
         <div class="hint">表紙上の追加画像は直接ドラッグできます。ホイールで拡大・縮小できます。</div>
       </section>
 
@@ -2434,6 +2457,7 @@
 
   <div class="mobile-image-bar">
     <label for="imageInput">＋ 画像追加</label>
+    <button id="mobileReplaceBtn" type="button">画像入替</button>
     <button id="mobileAdjustBtn" type="button">画像調整</button>
   </div>
 
@@ -2558,6 +2582,7 @@
     let selectedMainJob = "AST";
     let selectedSubJobs = [];
     let uploadedImages = [];
+    let nextImageId = 1;
     let currentImageIndex = -1;
     let imageState = { x: 0, y: 0, scale: 1, rotate: 0 };
     const layerShapes = {
@@ -2801,13 +2826,29 @@
     }
 
     function renderImageLayers() {
-      imageLayerContainer.innerHTML = "";
+      const existingLayers = new Map(
+        Array.from(imageLayerContainer.children).map((layer) => [layer.dataset.imageId, layer])
+      );
+      const activeIds = new Set();
       uploadedImages.slice(1).forEach((image, offset) => {
         const index = offset + 1;
+        if (!image.id) image.id = String(nextImageId++);
+        activeIds.add(String(image.id));
         image.state = { ...overlayStateDefaults, ...image.state };
         const state = image.state;
         const shape = layerShapes[state.shape] || layerShapes.rectangle;
-        const layer = document.createElement("div");
+        let layer = existingLayers.get(String(image.id));
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.dataset.imageId = String(image.id);
+          const viewport = document.createElement("div");
+          viewport.className = "layer-image-viewport";
+          const picture = document.createElement("img");
+          picture.alt = "";
+          picture.draggable = false;
+          viewport.appendChild(picture);
+          layer.appendChild(viewport);
+        }
         layer.className = `cover-overlay-layer frame-${state.frame}` + (index === currentImageIndex ? " is-active" : "");
         layer.dataset.imageIndex = index;
         layer.style.zIndex = index;
@@ -2816,13 +2857,19 @@
         layer.style.setProperty("--layer-clip", shape.clip);
         layer.style.setProperty("--layer-frame-color", state.frameColor);
         layer.style.setProperty("--layer-frame-width", `${state.frameWidth}px`);
-        const picture = document.createElement("img");
-        picture.src = image.src;
-        picture.alt = "";
-        picture.draggable = false;
-        picture.style.objectPosition = `${state.cropX}% ${state.cropY}%`;
-        layer.appendChild(picture);
+        const picture = layer.querySelector(".layer-image-viewport > img");
+        if (picture.getAttribute("src") !== image.src) picture.src = image.src;
+        const cropShiftX = state.cropX <= 50
+          ? ((50 - state.cropX) / 150) * 10
+          : -((state.cropX - 50) / 50) * 10;
+        const cropShiftY = state.cropY <= 50
+          ? ((50 - state.cropY) / 150) * 10
+          : -((state.cropY - 50) / 50) * 10;
+        picture.style.transform = `translate(calc(-50% + ${cropShiftX}%), calc(-50% + ${cropShiftY}%))`;
         imageLayerContainer.appendChild(layer);
+      });
+      Array.from(imageLayerContainer.children).forEach((layer) => {
+        if (!activeIds.has(layer.dataset.imageId)) layer.remove();
       });
     }
 
@@ -2878,6 +2925,8 @@
       $("layerBackBtn").disabled = !isOverlay || currentImageIndex <= 1;
       $("layerForwardBtn").disabled = !isOverlay || currentImageIndex >= uploadedImages.length - 1;
       $("removeImageBtn").disabled = !hasSelection;
+      $("replaceImageBtn").disabled = !hasSelection;
+      $("mobileReplaceBtn").disabled = !hasSelection;
       ["layerShapeSelect", "layerFrameSelect", "layerFrameColor", "layerFrameWidth", "layerCropX", "layerCropY"].forEach((id) => {
         $(id).disabled = !isOverlay;
       });
@@ -3366,25 +3415,45 @@
       }
     });
 
+    function loadImageSource(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+      });
+    }
+
+    async function prepareImage(file) {
+      const sourceUrl = URL.createObjectURL(file);
+      try {
+        const source = await loadImageSource(sourceUrl);
+        const maxDimension = 2400;
+        const scale = Math.min(1, maxDimension / Math.max(source.naturalWidth, source.naturalHeight));
+        const width = Math.max(1, Math.round(source.naturalWidth * scale));
+        const height = Math.max(1, Math.round(source.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d", { alpha: true }).drawImage(source, 0, 0, width, height);
+        const optimizedBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.9));
+        return {
+          id: String(nextImageId++),
+          name: file.name,
+          src: URL.createObjectURL(optimizedBlob || file),
+          width,
+          height,
+          state: { x: 0, y: 0, scale: 1, rotate: 0 }
+        };
+      } finally {
+        URL.revokeObjectURL(sourceUrl);
+      }
+    }
+
     $("imageInput").addEventListener("change", (event) => {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
-      const readers = files.map((file) => new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const probe = new Image();
-          probe.onload = () => resolve({
-            name: file.name,
-            src: reader.result,
-            width: probe.naturalWidth,
-            height: probe.naturalHeight,
-            state: { x: 0, y: 0, scale: 1, rotate: 0 }
-          });
-          probe.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-      }));
-      Promise.all(readers).then((images) => {
+      Promise.all(files.map(prepareImage)).then((images) => {
         const firstNewIndex = uploadedImages.length;
         images.forEach((image, offset) => {
           const index = firstNewIndex + offset;
@@ -3403,7 +3472,48 @@
         event.target.value = "";
         openImageControlsOnMobile();
         setStatus(`${images.length}枚を追加しました（合計${uploadedImages.length}枚）`);
+      }).catch((error) => {
+        console.error(error);
+        setStatus("画像を読み込めませんでした");
       });
+    });
+
+    function openReplacePicker() {
+      if (currentImageIndex < 0 || !uploadedImages[currentImageIndex]) {
+        setStatus("入れ替える画像を選択してください");
+        return;
+      }
+      $("replaceImageInput").click();
+    }
+
+    $("replaceImageBtn").addEventListener("click", openReplacePicker);
+    $("mobileReplaceBtn").addEventListener("click", openReplacePicker);
+
+    $("replaceImageInput").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file || currentImageIndex < 0) return;
+      const target = uploadedImages[currentImageIndex];
+      try {
+        const replacement = await prepareImage(file);
+        if (!uploadedImages.includes(target)) {
+          URL.revokeObjectURL(replacement.src);
+          return;
+        }
+        const previousSrc = target.src;
+        target.name = replacement.name;
+        target.src = replacement.src;
+        target.width = replacement.width;
+        target.height = replacement.height;
+        if (previousSrc?.startsWith("blob:")) URL.revokeObjectURL(previousSrc);
+        renderImageStrip();
+        syncImage();
+        setStatus(currentImageIndex === 0 ? "背景画像を入れ替えました" : "追加画像を入れ替えました");
+      } catch (error) {
+        console.error(error);
+        setStatus("画像を入れ替えられませんでした");
+      } finally {
+        event.target.value = "";
+      }
     });
 
     $("scaleRange").addEventListener("input", (event) => {
@@ -3470,7 +3580,8 @@
     $("removeImageBtn").addEventListener("click", () => {
       if (currentImageIndex < 0 || !uploadedImages[currentImageIndex]) return;
       const removedIndex = currentImageIndex;
-      uploadedImages.splice(removedIndex, 1);
+      const [removedImage] = uploadedImages.splice(removedIndex, 1);
+      if (removedImage?.src?.startsWith("blob:")) URL.revokeObjectURL(removedImage.src);
       currentImageIndex = -1;
       if (!uploadedImages.length) {
         imageState = { x: 0, y: 0, scale: 1, rotate: 0 };
@@ -3513,6 +3624,11 @@
 
     window.addEventListener("pointerup", () => { drag = null; });
     window.addEventListener("resize", syncImage);
+    window.addEventListener("beforeunload", () => {
+      uploadedImages.forEach((image) => {
+        if (image.src?.startsWith("blob:")) URL.revokeObjectURL(image.src);
+      });
+    });
 
     cover.addEventListener("wheel", (event) => {
       if (currentImageIndex < 0 || !uploadedImages[currentImageIndex]) return;
