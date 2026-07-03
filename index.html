@@ -887,7 +887,7 @@
     }
 
     .cover.style-leon .subtitle {
-      color: var(--accent);
+      color: var(--headline-text-color, var(--accent));
       font-size: var(--headline-font-size, 18px);
       line-height: 0.95;
     }
@@ -1002,7 +1002,7 @@
       max-width: 52%;
     }
 
-    .cover.style-gq .subtitle { color: var(--accent); }
+    .cover.style-gq .subtitle { color: var(--headline-text-color, var(--accent)); }
 
     .cover.style-minimal {
       --accent: #d44836;
@@ -2546,7 +2546,6 @@
               <h2 class="name" id="nameOutput">LUMINOUS</h2>
               <div class="meta" id="metaOutput">
                 <span id="worldOutput">Meteor / Shinryu</span>
-                <span>Community Cover</span>
               </div>
               <div class="fineprint" id="copyrightOutput">FINAL FANTASY XIV @SQUARE ENIX</div>
             </div>
