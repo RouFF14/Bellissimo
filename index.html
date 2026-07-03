@@ -1919,6 +1919,7 @@
       }
       .cover-mid { grid-template-columns: 1fr 1fr; }
       .range-row { grid-template-columns: 58px 1fr 48px; }
+      .range-row input[type="range"] { min-height: 44px; }
       .mobile-image-bar {
         position: fixed;
         z-index: 100;
@@ -4038,7 +4039,10 @@
       syncImage();
     });
 
-    window.addEventListener("pointerup", () => { drag = null; });
+    const clearPointerDrag = () => { drag = null; };
+    window.addEventListener("pointerup", clearPointerDrag);
+    window.addEventListener("pointercancel", clearPointerDrag);
+    cover.addEventListener("lostpointercapture", clearPointerDrag);
     window.addEventListener("resize", () => {
       syncImage();
       applyFreeLayout();
