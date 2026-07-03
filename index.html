@@ -699,6 +699,15 @@
       display: none;
     }
 
+    .free-text-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      color: inherit;
+      text-shadow: 0 3px 18px rgba(0,0,0,0.56);
+      pointer-events: none;
+    }
+
     .cover.is-free-layout .free-positioned {
       position: absolute !important;
       left: var(--free-x, 50%) !important;
@@ -711,6 +720,18 @@
       z-index: 8;
       cursor: move;
       pointer-events: auto;
+    }
+
+    .cover.is-free-layout #magazineOutput {
+      margin: 0;
+      font-family: var(--title-font-family, Cinzel, "Noto Serif JP", serif) !important;
+      font-size: var(--title-font-size, 82px);
+      font-weight: 900;
+      line-height: 0.82;
+      letter-spacing: 0;
+      color: var(--title-text-color, var(--cover-text));
+      overflow-wrap: anywhere;
+      text-wrap: balance;
     }
 
     .cover.is-free-layout .free-positioned.is-free-selected {
@@ -2528,6 +2549,7 @@
               <div class="fineprint" id="copyrightOutput">FINAL FANTASY XIV @SQUARE ENIX</div>
             </div>
           </div>
+          <div class="free-text-layer" id="freeTextLayer"></div>
         </article>
         <div class="status" id="status"></div>
       </div>
@@ -2546,6 +2568,7 @@
     const cover = $("cover");
     const coverImage = $("coverImage");
     const imageLayerContainer = $("imageLayerContainer");
+    const freeTextLayer = $("freeTextLayer");
     const coverLogo = $("coverLogo");
     const placeholderArt = $("placeholderArt");
     const status = $("status");
@@ -2744,6 +2767,13 @@
       Object.entries(freeLayoutDefaults).map(([key, value]) => [key, { ...value }])
     );
     let selectedFreeElement = "title";
+    const freeElementAnchors = {};
+    Object.entries(freeElements).forEach(([key, id]) => {
+      const element = $(id);
+      const anchor = document.createComment(`free-${key}`);
+      element.parentNode.insertBefore(anchor, element);
+      freeElementAnchors[key] = anchor;
+    });
 
     const topics = ["SS撮影", "ミラプリ", "ハウジング", "地図", "レイド", "フレンド募集", "クラフター", "ギャザラー", "PvP", "ロールプレイ", "絶", "零式"];
     let selectedTopics = ["SS撮影", "ミラプリ", "ハウジング", "地図"];
@@ -3033,6 +3063,12 @@
       Object.entries(freeElements).forEach(([key, id]) => {
         const element = $(id);
         const state = freeLayoutState[key];
+        const anchor = freeElementAnchors[key];
+        if (enabled && element.parentNode !== freeTextLayer) {
+          freeTextLayer.appendChild(element);
+        } else if (!enabled && anchor.parentNode && element.parentNode !== anchor.parentNode) {
+          anchor.parentNode.insertBefore(element, anchor.nextSibling);
+        }
         element.dataset.freeKey = key;
         element.classList.toggle("free-positioned", enabled);
         element.classList.toggle("is-free-selected", enabled && key === selectedFreeElement);
@@ -3986,6 +4022,7 @@
         cover.style.width = `${currentRect.width}px`;
         cover.style.height = `${currentRect.height}px`;
         syncImage();
+        applyFreeLayout();
         await document.fonts.ready;
         const canvas = await html2canvas(cover, {
           scale: Number($("exportQualitySelect").value || 3),
