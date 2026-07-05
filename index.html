@@ -707,6 +707,95 @@
       pointer-events: none;
     }
 
+    .sticker-layer-container {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      pointer-events: none;
+    }
+
+    .cover-sticker {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      min-width: 42px;
+      max-width: 70%;
+      padding: 7px 12px;
+      border: 2px solid currentColor;
+      background: rgba(8, 9, 12, 0.78);
+      color: #fff;
+      font-family: Inter, "Noto Serif JP", sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.1;
+      text-align: center;
+      transform: translate(-50%, -50%);
+      transform-origin: center;
+      pointer-events: auto;
+      cursor: move;
+      overflow-wrap: anywhere;
+    }
+
+    .cover-sticker.is-selected {
+      outline: 2px dashed rgba(255,255,255,0.92);
+      outline-offset: 3px;
+    }
+
+    .cover-sticker.sticker-circle {
+      width: 92px;
+      min-width: 92px;
+      height: 92px;
+      padding: 8px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+
+    .cover-sticker.sticker-ribbon { transform: translate(-50%, -50%) skew(-8deg); }
+    .cover-sticker.sticker-label { border-radius: 999px; }
+    .cover-sticker.sticker-outline { background: transparent; border-width: 4px; }
+    .cover-sticker.sticker-qr { padding: 5px; background: #fff; border-color: #fff; }
+    .cover-sticker.sticker-qr img { width: 100%; height: 100%; display: block; }
+
+    .compare-image {
+      position: absolute;
+      z-index: 30;
+      left: 50%;
+      top: 50%;
+      width: var(--img-render-width, 100%);
+      height: var(--img-render-height, 100%);
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      transform:
+        translate(-50%, -50%)
+        translate(var(--img-x, 0px), var(--img-y, 0px))
+        rotate(var(--img-rotate, 0deg))
+        scale(var(--img-scale, 1));
+      clip-path: inset(0 calc(100% - var(--compare-position, 50%)) 0 0);
+      pointer-events: none;
+      display: none;
+    }
+
+    .compare-divider {
+      position: absolute;
+      z-index: 31;
+      top: 0;
+      bottom: 0;
+      left: var(--compare-position, 50%);
+      width: 2px;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.45);
+      pointer-events: none;
+      display: none;
+    }
+
+    .cover.is-comparing .compare-image,
+    .cover.is-comparing .compare-divider { display: block; }
+    .cover.is-exporting .compare-image,
+    .cover.is-exporting .compare-divider { display: none; }
+    .cover.is-exporting .cover-sticker.is-selected { outline: 0; }
+
     .cover.is-free-layout .free-positioned {
       position: absolute !important;
       left: var(--free-left, 0px) !important;
@@ -2388,6 +2477,90 @@
         <div class="hint">文字揃えは全スタイルで使用できます。フリースタイル選択中は、表紙上の文字を直接ドラッグできます。</div>
       </section>
 
+      <section class="section">
+        <div class="section-title">スマート補正</div>
+        <div class="two">
+          <button id="autoLayoutBtn" type="button">文字を自動補正</button>
+          <button id="avoidFaceBtn" type="button">顔を避けて配置</button>
+        </div>
+        <div class="two">
+          <button id="extractPaletteBtn" type="button">写真から配色</button>
+          <button id="smartRandomBtn" type="button">おまかせ生成</button>
+        </div>
+        <div class="field">
+          <label for="textEffectSelect">選択文字のエフェクト</label>
+          <select id="textEffectSelect">
+            <option value="none">なし</option>
+            <option value="shadow">深い影</option>
+            <option value="outline">くっきり縁取り</option>
+            <option value="double-outline">二重縁取り</option>
+            <option value="neon">ネオン発光</option>
+            <option value="gold">ゴールド</option>
+            <option value="silver">シルバー</option>
+            <option value="retro">レトロ印刷</option>
+            <option value="glitch">色ずれ</option>
+            <option value="emboss">立体エンボス</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="removeBgThreshold">背景除去の強さ <span id="removeBgThresholdValue">42</span></label>
+          <input id="removeBgThreshold" type="range" min="12" max="100" step="1" value="42">
+        </div>
+        <button id="removeBackgroundBtn" type="button">選択画像の背景を除去</button>
+        <div class="hint">背景除去は画像の四隅に近い色を透明化します。単色背景ほどきれいに切り抜けます。</div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">装飾 / QR</div>
+        <div class="two">
+          <div class="field">
+            <label for="stickerPresetSelect">ステッカー</label>
+            <select id="stickerPresetSelect">
+              <option value="NEW">NEW</option>
+              <option value="SPECIAL">SPECIAL</option>
+              <option value="FFXIV">FFXIV</option>
+              <option value="零式">零式</option>
+              <option value="絶">絶</option>
+              <option value="撮影会">撮影会</option>
+              <option value="ミラプリ">ミラプリ</option>
+              <option value="RP">RP</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="stickerStyleSelect">形</label>
+            <select id="stickerStyleSelect">
+              <option value="label">ラベル</option>
+              <option value="circle">丸</option>
+              <option value="ribbon">リボン</option>
+              <option value="outline">アウトライン</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="stickerTextInput">自由テキスト</label>
+          <input id="stickerTextInput" type="text" placeholder="空欄ならプリセットを使用">
+        </div>
+        <div class="two">
+          <button id="addStickerBtn" type="button">ステッカー追加</button>
+          <button id="removeStickerBtn" type="button" disabled>選択を削除</button>
+        </div>
+        <div class="range-row">
+          <span>大きさ</span>
+          <input id="stickerSizeRange" type="range" min="0.5" max="3" step="0.05" value="1">
+          <span id="stickerSizeValue">1.00</span>
+        </div>
+        <div class="range-row">
+          <span>角度</span>
+          <input id="stickerRotateRange" type="range" min="-180" max="180" step="1" value="0">
+          <span id="stickerRotateValue">0°</span>
+        </div>
+        <div class="field">
+          <label for="qrTextInput">QRコードのURL / テキスト</label>
+          <input id="qrTextInput" type="text" inputmode="url" placeholder="https://">
+        </div>
+        <button id="addQrBtn" type="button">QRコード追加</button>
+      </section>
+
       <section class="section" id="imageControlsSection">
         <div class="section-title">画像位置 <span id="imageLayerLabel">画像未選択</span></div>
         <div class="field">
@@ -2489,6 +2662,21 @@
       <section class="section">
         <div class="section-title">書き出し</div>
         <div class="field">
+          <label for="compareRange">Before / After比較</label>
+          <input id="compareRange" type="range" min="0" max="100" step="1" value="50" disabled>
+        </div>
+        <label class="toggle-chip"><input type="checkbox" id="compareToggle">比較表示</label>
+        <div class="field">
+          <label for="exportFormatSelect">出力サイズ</label>
+          <select id="exportFormatSelect">
+            <option value="cover">表紙 9:13</option>
+            <option value="square">SNS正方形 1:1</option>
+            <option value="portrait">SNS縦長 4:5</option>
+            <option value="story">ストーリー 9:16</option>
+            <option value="wallpaper">スマホ壁紙 9:16</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="exportQualitySelect">保存品質</label>
           <select id="exportQualitySelect">
             <option value="1">軽量 / 1x</option>
@@ -2497,6 +2685,7 @@
             <option value="4">最高画質 / 4x</option>
           </select>
         </div>
+        <button id="batchExportBtn" type="button">全サイズを一括保存</button>
       </section>
 
       <section class="section">
@@ -2531,6 +2720,8 @@
         <article class="cover style-visque" id="cover">
           <div class="placeholder-art" id="placeholderArt"></div>
           <img id="coverImage" alt="">
+          <img class="compare-image" id="compareImage" alt="">
+          <div class="compare-divider" id="compareDivider"></div>
           <div class="image-layer-container" id="imageLayerContainer"></div>
           <img class="cover-logo" id="coverLogo" alt="">
           <div class="cover-content">
@@ -2559,6 +2750,7 @@
             </div>
           </div>
           <div class="free-text-layer" id="freeTextLayer"></div>
+          <div class="sticker-layer-container" id="stickerLayerContainer"></div>
         </article>
         <div class="status" id="status"></div>
       </div>
@@ -2579,6 +2771,8 @@
     const imageLayerContainer = $("imageLayerContainer");
     const freeTextLayer = $("freeTextLayer");
     const coverLogo = $("coverLogo");
+    const stickerLayerContainer = $("stickerLayerContainer");
+    const compareImage = $("compareImage");
     const placeholderArt = $("placeholderArt");
     const status = $("status");
 
@@ -2901,6 +3095,306 @@
       watermark: { x: 50, y: 50, size: 78, opacity: 0.25 }
     };
     let drag = null;
+    let stickers = [];
+    let nextStickerId = 1;
+    let selectedStickerId = null;
+    const textEffects = Object.fromEntries(Object.keys(freeElements).map((key) => [key, "none"]));
+
+    function applyTextEffectToElement(element, effect) {
+      element.style.removeProperty("text-shadow");
+      element.style.removeProperty("-webkit-text-stroke");
+      element.style.removeProperty("background-image");
+      element.style.removeProperty("background-clip");
+      element.style.removeProperty("-webkit-background-clip");
+      element.style.removeProperty("-webkit-text-fill-color");
+      element.style.removeProperty("filter");
+      if (effect === "shadow") element.style.textShadow = "0 6px 2px rgba(0,0,0,.35), 0 12px 22px rgba(0,0,0,.8)";
+      if (effect === "outline") element.style.webkitTextStroke = "1.5px rgba(0,0,0,.9)";
+      if (effect === "double-outline") {
+        element.style.webkitTextStroke = "1px #fff";
+        element.style.textShadow = "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000";
+      }
+      if (effect === "neon") element.style.textShadow = "0 0 4px currentColor, 0 0 10px currentColor, 0 0 22px var(--accent)";
+      if (effect === "gold" || effect === "silver") {
+        element.style.backgroundImage = effect === "gold"
+          ? "linear-gradient(180deg,#fff4ad 0%,#d9a62e 45%,#fff0a1 62%,#8b5d10 100%)"
+          : "linear-gradient(180deg,#fff 0%,#8d98a5 45%,#f7fbff 62%,#515a66 100%)";
+        element.style.backgroundClip = "text";
+        element.style.webkitBackgroundClip = "text";
+        element.style.webkitTextFillColor = "transparent";
+        element.style.filter = "drop-shadow(0 3px 3px rgba(0,0,0,.55))";
+      }
+      if (effect === "retro") element.style.textShadow = "3px 3px 0 var(--accent), 6px 6px 0 rgba(0,0,0,.7)";
+      if (effect === "glitch") element.style.textShadow = "-3px 0 #00d9ff, 3px 0 #ff2f72";
+      if (effect === "emboss") element.style.textShadow = "-2px -2px 1px rgba(255,255,255,.5), 3px 3px 2px rgba(0,0,0,.8)";
+    }
+
+    function applyTextEffects() {
+      Object.entries(freeElements).forEach(([key, id]) => {
+        applyTextEffectToElement($(id), textEffects[key] || "none");
+      });
+      $("textEffectSelect").value = textEffects[selectedFreeElement] || "none";
+    }
+
+    function renderStickers() {
+      const existing = new Map(Array.from(stickerLayerContainer.children).map((node) => [node.dataset.stickerId, node]));
+      const active = new Set();
+      stickers.forEach((sticker) => {
+        const id = String(sticker.id);
+        active.add(id);
+        let element = existing.get(id);
+        if (!element) {
+          element = document.createElement("div");
+          element.dataset.stickerId = id;
+          stickerLayerContainer.appendChild(element);
+        }
+        element.className = `cover-sticker sticker-${sticker.style}` + (sticker.id === selectedStickerId ? " is-selected" : "");
+        if (sticker.type === "qr") {
+          let image = element.querySelector("img");
+          if (!image) {
+            element.replaceChildren();
+            image = document.createElement("img");
+            image.alt = "QR";
+            element.appendChild(image);
+          }
+          image.src = sticker.src;
+        } else {
+          element.textContent = sticker.text;
+        }
+        element.style.left = `${sticker.x}%`;
+        element.style.top = `${sticker.y}%`;
+        element.style.color = sticker.color;
+        const skew = sticker.style === "ribbon" ? " skew(-8deg)" : "";
+        element.style.transform = `translate(-50%, -50%) rotate(${sticker.rotate}deg) scale(${sticker.scale})${skew}`;
+      });
+      Array.from(stickerLayerContainer.children).forEach((node) => {
+        if (!active.has(node.dataset.stickerId)) node.remove();
+      });
+      const selected = stickers.find((item) => item.id === selectedStickerId);
+      $("removeStickerBtn").disabled = !selected;
+      $("stickerSizeRange").disabled = !selected;
+      $("stickerRotateRange").disabled = !selected;
+      if (selected) {
+        $("stickerSizeRange").value = selected.scale;
+        $("stickerRotateRange").value = selected.rotate;
+        $("stickerSizeValue").textContent = Number(selected.scale).toFixed(2);
+        $("stickerRotateValue").textContent = `${Math.round(selected.rotate)}°`;
+      }
+    }
+
+    function addSticker(data) {
+      const sticker = {
+        id: nextStickerId++,
+        type: "text",
+        text: "NEW",
+        style: "label",
+        color: getComputedStyle(root).getPropertyValue("--accent").trim() || "#ff4f7b",
+        x: 50,
+        y: 50,
+        scale: 1,
+        rotate: 0,
+        ...data
+      };
+      stickers.push(sticker);
+      selectedStickerId = sticker.id;
+      renderStickers();
+    }
+
+    async function autoFitText() {
+      const targets = {
+        titleSize: $("magazineOutput"),
+        jobSize: $("jobOutput"),
+        quoteSize: $("quoteOutput"),
+        headlineSize: $("subtitleOutput"),
+        nameSize: $("nameOutput")
+      };
+      applyFreeLayout();
+      Object.entries(targets).forEach(([key, element]) => {
+        const config = textSizeControls[key];
+        let value = Number($(`${key}Number`).value);
+        let loops = 0;
+        const coverRect = cover.getBoundingClientRect();
+        while (value > config.min && loops < 48) {
+          const rect = element.getBoundingClientRect();
+          const overflowing = element.scrollWidth > element.clientWidth + 1
+            || rect.left < coverRect.left
+            || rect.right > coverRect.right
+            || rect.top < coverRect.top
+            || rect.bottom > coverRect.bottom;
+          if (!overflowing) break;
+          value -= 1;
+          setTextSize(key, value);
+          if (isFreeLayoutCategory()) applyFreeLayout();
+          loops += 1;
+        }
+      });
+      if (isFreeLayoutCategory()) {
+        Object.values(freeLayoutState).forEach((state) => {
+          state.x = Math.max(state.width / 2, Math.min(100 - state.width / 2, state.x));
+          state.y = Math.max(3, Math.min(97, state.y));
+        });
+        applyFreeLayout();
+      }
+      setStatus("文字を枠内へ自動補正しました");
+    }
+
+    async function analyzeImageFocus(image) {
+      if ("FaceDetector" in window) {
+        try {
+          const detector = new FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
+          const faces = await detector.detect(image);
+          if (faces.length) {
+            const face = faces.sort((a, b) => (b.boundingBox.width * b.boundingBox.height) - (a.boundingBox.width * a.boundingBox.height))[0];
+            return {
+              x: (face.boundingBox.x + face.boundingBox.width / 2) / image.naturalWidth,
+              y: (face.boundingBox.y + face.boundingBox.height / 2) / image.naturalHeight,
+              face: true
+            };
+          }
+        } catch {}
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = 64;
+      canvas.height = 64;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0, 64, 64);
+      const data = context.getImageData(0, 0, 64, 64).data;
+      let total = 0;
+      let weightedX = 0;
+      let weightedY = 0;
+      for (let y = 1; y < 63; y += 2) {
+        for (let x = 1; x < 63; x += 2) {
+          const i = (y * 64 + x) * 4;
+          const right = i + 8;
+          const down = i + 64 * 4 * 2;
+          const weight = Math.abs(data[i] - data[right]) + Math.abs(data[i + 1] - data[right + 1])
+            + Math.abs(data[i] - data[down]) + Math.abs(data[i + 1] - data[down + 1]) + 1;
+          total += weight;
+          weightedX += x * weight;
+          weightedY += y * weight;
+        }
+      }
+      return { x: weightedX / total / 64, y: weightedY / total / 64, face: false };
+    }
+
+    async function avoidImageFocus() {
+      const background = uploadedImages[0];
+      if (!background) {
+        setStatus("先に表紙画像を追加してください");
+        return;
+      }
+      setStatus("人物位置を解析中...");
+      const image = await loadImageSource(background.src);
+      const focus = await analyzeImageFocus(image);
+      const feminine = currentStyleCategory === "ladies" || currentStyleCategory === "freeLadies";
+      const styles = coverStyles[feminine ? "freeLadies" : "freeMens"];
+      const currentIndex = Math.max(0, Number(($("styleSelect").value.match(/(\d+)$/) || [0, 1])[1]) - 1);
+      currentStyleCategory = feminine ? "freeLadies" : "freeMens";
+      $("styleCategorySelect").value = currentStyleCategory;
+      renderStyleOptions();
+      $("styleSelect").value = styles[currentIndex % styles.length].key;
+      applyCoverStyle($("styleSelect").value);
+      const safeX = focus.x > 0.5 ? 23 : 77;
+      freeLayoutState.job.x = safeX;
+      freeLayoutState.job.y = focus.y > 0.55 ? 37 : 62;
+      freeLayoutState.topics.x = safeX;
+      freeLayoutState.headline.x = safeX;
+      freeLayoutState.name.x = safeX;
+      freeLayoutState.title.x = focus.x > 0.5 ? 34 : 66;
+      applyFreeLayout();
+      await autoFitText();
+      setStatus(focus.face ? "顔を避けて配置しました" : "主役を避けて配置しました");
+    }
+
+    function colorDistance(a, b) {
+      return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    }
+
+    async function removeSelectedBackground() {
+      const target = uploadedImages[currentImageIndex];
+      if (!target) {
+        setStatus("背景を除去する画像を選択してください");
+        return;
+      }
+      setStatus("背景を除去中...");
+      const image = await loadImageSource(target.src);
+      const max = 1800;
+      const scale = Math.min(1, max / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+      const d = pixels.data;
+      const cornerIndices = [0, (canvas.width - 1) * 4, ((canvas.height - 1) * canvas.width) * 4, (canvas.width * canvas.height - 1) * 4];
+      const backgroundColor = [0, 1, 2].map((channel) =>
+        cornerIndices.reduce((sum, index) => sum + d[index + channel], 0) / cornerIndices.length
+      );
+      const threshold = Number($("removeBgThreshold").value);
+      const feather = 28;
+      for (let i = 0; i < d.length; i += 4) {
+        const distance = colorDistance([d[i], d[i + 1], d[i + 2]], backgroundColor);
+        if (distance < threshold) d[i + 3] = 0;
+        else if (distance < threshold + feather) d[i + 3] = Math.round(255 * (distance - threshold) / feather);
+      }
+      context.putImageData(pixels, 0, 0);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.92));
+      if (!blob) throw new Error("背景除去に失敗しました");
+      const oldSrc = target.src;
+      target.src = URL.createObjectURL(blob);
+      target.width = canvas.width;
+      target.height = canvas.height;
+      if (oldSrc.startsWith("blob:")) URL.revokeObjectURL(oldSrc);
+      canvas.width = 1;
+      canvas.height = 1;
+      renderImageStrip();
+      syncImageNow();
+      setStatus("背景を透明化しました");
+    }
+
+    async function extractImagePalette() {
+      const background = uploadedImages[0];
+      if (!background) {
+        setStatus("先に表紙画像を追加してください");
+        return;
+      }
+      const image = await loadImageSource(background.src);
+      const canvas = document.createElement("canvas");
+      canvas.width = 48;
+      canvas.height = 48;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0, 48, 48);
+      const data = context.getImageData(0, 0, 48, 48).data;
+      const buckets = new Map();
+      let luminance = 0;
+      let count = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        luminance += r * 0.299 + g * 0.587 + b * 0.114;
+        count += 1;
+        const key = `${Math.round(r / 32) * 32},${Math.round(g / 32) * 32},${Math.round(b / 32) * 32}`;
+        buckets.set(key, (buckets.get(key) || 0) + 1);
+      }
+      const colors = [...buckets.entries()]
+        .map(([key, amount]) => ({ rgb: key.split(",").map(Number), amount }))
+        .filter(({ rgb }) => Math.max(...rgb) - Math.min(...rgb) > 32)
+        .sort((a, b) => b.amount - a.amount);
+      const accentRgb = (colors[0] || { rgb: [255, 79, 123] }).rgb;
+      const accent = `#${accentRgb.map((value) => Math.min(255, value).toString(16).padStart(2, "0")).join("")}`;
+      const darkImage = luminance / count < 130;
+      const base = darkImage ? "#fff8ed" : "#171515";
+      root.style.setProperty("--accent", accent);
+      root.style.setProperty("--accent-2", accent);
+      setTextPalette({
+        titleColor: base, metaColor: base, topicColor: base, labelColor: accent,
+        jobColor: base, quoteColor: base, headlineColor: accent, nameColor: base,
+        copyrightColor: darkImage ? "#d3d0ca" : "#4d4844"
+      });
+      setStatus("写真から配色を作成しました");
+    }
 
     function setText(inputId, outputId) {
       const value = $(inputId).value.trim();
@@ -3289,10 +3783,12 @@
         cover.style.setProperty("--img-scale", background.state.scale);
         cover.style.setProperty("--img-rotate", `${background.state.rotate}deg`);
         if (coverImage.src !== background.src) coverImage.src = background.src;
+        if (compareImage.src !== background.src) compareImage.src = background.src;
         coverImage.style.display = "block";
         placeholderArt.style.display = "none";
       } else {
         coverImage.removeAttribute("src");
+        compareImage.removeAttribute("src");
         coverImage.style.display = "none";
         placeholderArt.style.display = "block";
       }
@@ -3317,6 +3813,12 @@
       $("removeImageBtn").disabled = !hasSelection;
       $("replaceImageBtn").disabled = !hasSelection;
       $("mobileReplaceBtn").disabled = !hasSelection;
+      $("compareToggle").disabled = !background;
+      $("compareRange").disabled = !background || !$("compareToggle").checked;
+      if (!background) {
+        $("compareToggle").checked = false;
+        cover.classList.remove("is-comparing");
+      }
       ["layerShapeSelect", "layerFrameSelect", "layerFrameColor", "layerFrameWidth", "layerCropX", "layerCropY"].forEach((id) => {
         $(id).disabled = !isOverlay;
       });
@@ -3572,7 +4074,10 @@
           preset: $("logoPresetSelect").value,
           ...logoState
         },
+        textEffects: { ...textEffects },
+        stickers: stickers.map((sticker) => ({ ...sticker })),
         visibility,
+        exportFormat: $("exportFormatSelect").value,
         exportQuality: $("exportQualitySelect").value
       };
     }
@@ -3622,8 +4127,17 @@
           if (data.logo[key] !== undefined) logoState[key] = Number(data.logo[key]);
         });
       }
+      Object.entries(data.textEffects || {}).forEach(([key, value]) => {
+        if (key in textEffects) textEffects[key] = value;
+      });
+      if (Array.isArray(data.stickers)) {
+        stickers = data.stickers.map((sticker) => ({ ...sticker }));
+        nextStickerId = Math.max(0, ...stickers.map((sticker) => Number(sticker.id) || 0)) + 1;
+        selectedStickerId = stickers[0]?.id ?? null;
+      }
       Object.entries(data.visibility || {}).forEach(([id, checked]) => { if ($(id)) $(id).checked = Boolean(checked); });
       if (data.exportQuality) $("exportQualitySelect").value = data.exportQuality;
+      if (data.exportFormat) $("exportFormatSelect").value = data.exportFormat;
       cover.style.setProperty("--img-fit", $("fitSelect").value);
       cover.style.setProperty("--img-filter", $("filterSelect").value);
       applyCoverStyle($("styleSelect").value, false);
@@ -3636,6 +4150,8 @@
       applyTextSizes();
       applyFonts();
       syncLogo();
+      applyTextEffects();
+      renderStickers();
       syncImage();
     }
 
@@ -3719,6 +4235,7 @@
     $("freeElementSelect").addEventListener("change", (event) => {
       selectedFreeElement = event.target.value;
       applyFreeLayout();
+      applyTextEffects();
     });
 
     $("freeDirectionSelect").addEventListener("change", (event) => {
@@ -3730,6 +4247,142 @@
     $("freeAlignSelect").addEventListener("change", (event) => {
       freeLayoutState[selectedFreeElement].align = event.target.value;
       applyFreeLayout();
+    });
+
+    $("textEffectSelect").addEventListener("change", (event) => {
+      textEffects[selectedFreeElement] = event.target.value;
+      applyTextEffects();
+    });
+
+    $("autoLayoutBtn").addEventListener("click", () => {
+      autoFitText().catch((error) => {
+        console.error(error);
+        setStatus("自動補正に失敗しました");
+      });
+    });
+
+    $("avoidFaceBtn").addEventListener("click", () => {
+      avoidImageFocus().catch((error) => {
+        console.error(error);
+        setStatus("人物位置を解析できませんでした");
+      });
+    });
+
+    $("extractPaletteBtn").addEventListener("click", () => {
+      extractImagePalette().catch((error) => {
+        console.error(error);
+        setStatus("配色を抽出できませんでした");
+      });
+    });
+
+    $("removeBgThreshold").addEventListener("input", (event) => {
+      $("removeBgThresholdValue").textContent = event.target.value;
+    });
+
+    $("removeBackgroundBtn").addEventListener("click", () => {
+      removeSelectedBackground().catch((error) => {
+        console.error(error);
+        setStatus("背景除去に失敗しました");
+      });
+    });
+
+    $("addStickerBtn").addEventListener("click", () => {
+      addSticker({
+        text: $("stickerTextInput").value.trim() || $("stickerPresetSelect").value,
+        style: $("stickerStyleSelect").value,
+        x: 50,
+        y: 50
+      });
+      $("stickerTextInput").value = "";
+    });
+
+    $("removeStickerBtn").addEventListener("click", () => {
+      stickers = stickers.filter((sticker) => sticker.id !== selectedStickerId);
+      selectedStickerId = stickers[0]?.id ?? null;
+      renderStickers();
+    });
+
+    [["stickerSizeRange", "scale"], ["stickerRotateRange", "rotate"]].forEach(([id, key]) => {
+      $(id).addEventListener("input", (event) => {
+        const sticker = stickers.find((item) => item.id === selectedStickerId);
+        if (!sticker) return;
+        sticker[key] = Number(event.target.value);
+        renderStickers();
+      });
+    });
+
+    let qrCodePromise;
+    function ensureQrCode() {
+      if (window.QRCode) return Promise.resolve(window.QRCode);
+      if (qrCodePromise) return qrCodePromise;
+      qrCodePromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+        script.async = true;
+        script.onload = () => resolve(window.QRCode);
+        script.onerror = () => reject(new Error("QR機能を読み込めませんでした"));
+        document.head.appendChild(script);
+      });
+      return qrCodePromise;
+    }
+
+    $("addQrBtn").addEventListener("click", async () => {
+      const text = $("qrTextInput").value.trim();
+      if (!text) {
+        setStatus("QRに入れるURLまたはテキストを入力してください");
+        return;
+      }
+      try {
+        const QR = await ensureQrCode();
+        const holder = document.createElement("div");
+        holder.style.position = "fixed";
+        holder.style.left = "-9999px";
+        document.body.appendChild(holder);
+        new QR(holder, {
+          text,
+          width: 256,
+          height: 256,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QR.CorrectLevel.M
+        });
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const canvas = holder.querySelector("canvas");
+        const image = holder.querySelector("img");
+        const src = canvas ? canvas.toDataURL("image/png") : image?.src;
+        holder.remove();
+        if (!src) throw new Error("QR画像を作成できませんでした");
+        addSticker({ type: "qr", src, style: "qr", x: 80, y: 82, scale: 0.8, color: "#ffffff" });
+        setStatus("QRコードを追加しました");
+      } catch (error) {
+        console.error(error);
+        setStatus("QRコードを追加できませんでした");
+      }
+    });
+
+    $("compareToggle").addEventListener("change", (event) => {
+      const enabled = event.target.checked && Boolean(uploadedImages[0]);
+      cover.classList.toggle("is-comparing", enabled);
+      $("compareRange").disabled = !enabled;
+    });
+
+    $("compareRange").addEventListener("input", (event) => {
+      cover.style.setProperty("--compare-position", `${event.target.value}%`);
+    });
+
+    $("smartRandomBtn").addEventListener("click", async () => {
+      $("randomizeBtn").click();
+      const filterOptions = Array.from($("filterSelect").options);
+      $("filterSelect").value = filterOptions[Math.floor(Math.random() * filterOptions.length)].value;
+      cover.style.setProperty("--img-filter", $("filterSelect").value);
+      const effectOptions = Array.from($("textEffectSelect").options).map((option) => option.value);
+      ["title", "name", "headline"].forEach((key) => {
+        textEffects[key] = effectOptions[Math.floor(Math.random() * effectOptions.length)];
+      });
+      applyTextEffects();
+      if (uploadedImages[0]) await extractImagePalette();
+      await autoFitText();
+      setStatus("表紙をおまかせ生成しました");
     });
 
     $("freeRotateRange").addEventListener("input", (event) => {
@@ -3901,13 +4554,21 @@
     }
 
     async function prepareImage(file) {
-      const sourceUrl = URL.createObjectURL(file);
+      let sourceUrl = "";
+      let source;
       try {
-        const source = await loadImageSource(sourceUrl);
+        if ("createImageBitmap" in window) {
+          source = await createImageBitmap(file, { imageOrientation: "from-image" });
+        } else {
+          sourceUrl = URL.createObjectURL(file);
+          source = await loadImageSource(sourceUrl);
+        }
+        const sourceWidth = source.naturalWidth || source.width;
+        const sourceHeight = source.naturalHeight || source.height;
         const maxDimension = 2200;
-        const scale = Math.min(1, maxDimension / Math.max(source.naturalWidth, source.naturalHeight));
-        const width = Math.max(1, Math.round(source.naturalWidth * scale));
-        const height = Math.max(1, Math.round(source.naturalHeight * scale));
+        const scale = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+        const width = Math.max(1, Math.round(sourceWidth * scale));
+        const height = Math.max(1, Math.round(sourceHeight * scale));
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -3924,14 +4585,20 @@
           state: { x: 0, y: 0, scale: 1, rotate: 0 }
         };
       } finally {
-        URL.revokeObjectURL(sourceUrl);
+        source?.close?.();
+        if (sourceUrl) URL.revokeObjectURL(sourceUrl);
       }
     }
 
-    $("imageInput").addEventListener("change", (event) => {
+    $("imageInput").addEventListener("change", async (event) => {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
-      Promise.all(files.map(prepareImage)).then((images) => {
+      try {
+        const images = [];
+        for (let index = 0; index < files.length; index += 1) {
+          setStatus(`画像を最適化中 ${index + 1}/${files.length}`);
+          images.push(await prepareImage(files[index]));
+        }
         const firstNewIndex = uploadedImages.length;
         images.forEach((image, offset) => {
           const index = firstNewIndex + offset;
@@ -3950,10 +4617,10 @@
         event.target.value = "";
         openImageControlsOnMobile();
         setStatus(`${images.length}枚を追加しました（合計${uploadedImages.length}枚）`);
-      }).catch((error) => {
+      } catch (error) {
         console.error(error);
         setStatus("画像を読み込めませんでした");
-      });
+      }
     });
 
     function openReplacePicker() {
@@ -4086,6 +4753,23 @@
     $("layerForwardBtn").addEventListener("click", () => moveSelectedLayer(1));
 
     cover.addEventListener("pointerdown", (event) => {
+      const stickerTarget = event.target.closest?.(".cover-sticker");
+      if (stickerTarget) {
+        selectedStickerId = Number(stickerTarget.dataset.stickerId);
+        const sticker = stickers.find((item) => item.id === selectedStickerId);
+        if (!sticker) return;
+        renderStickers();
+        cover.setPointerCapture(event.pointerId);
+        drag = {
+          type: "sticker",
+          id: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          x: sticker.x,
+          y: sticker.y
+        };
+        return;
+      }
       const freeTarget = isFreeLayoutCategory()
         ? event.target.closest?.("[data-free-key]")
         : null;
@@ -4113,6 +4797,15 @@
 
     cover.addEventListener("pointermove", (event) => {
       if (!drag || drag.id !== event.pointerId) return;
+      if (drag.type === "sticker") {
+        const sticker = stickers.find((item) => item.id === selectedStickerId);
+        if (!sticker) return;
+        const rect = cover.getBoundingClientRect();
+        sticker.x = Math.max(0, Math.min(100, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
+        sticker.y = Math.max(0, Math.min(100, drag.y + ((event.clientY - drag.startY) / rect.height) * 100));
+        renderStickers();
+        return;
+      }
       if (drag.type === "free") {
         const rect = cover.getBoundingClientRect();
         freeLayoutState[selectedFreeElement].x = Math.max(0, Math.min(100, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
@@ -4174,8 +4867,15 @@
       return html2CanvasPromise;
     }
 
-    $("downloadBtn").addEventListener("click", async () => {
-      setStatus("保存機能を準備中...");
+    const exportRatios = {
+      cover: 9 / 13,
+      square: 1,
+      portrait: 4 / 5,
+      story: 9 / 16,
+      wallpaper: 9 / 16
+    };
+
+    async function captureCoverCanvas() {
       const originalWidth = cover.style.width;
       const originalHeight = cover.style.height;
       try {
@@ -4191,27 +4891,12 @@
         await document.fonts.ready;
         applyFreeLayout();
         await new Promise((resolve) => requestAnimationFrame(resolve));
-        const canvas = await captureCover(cover, {
+        return await captureCover(cover, {
           scale: Number($("exportQualitySelect").value || 3),
           backgroundColor: null,
           useCORS: true,
           logging: false
         });
-        canvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          const name = $("nameInput").value.trim().replace(/[\\/:*?"<>|]+/g, "-") || "magazine-card";
-          a.download = `${name}-cover.png`;
-          a.href = url;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          setStatus("PNGを書き出しました");
-        }, "image/png");
-      } catch (error) {
-        console.error(error);
-        setStatus("書き出しに失敗しました");
       } finally {
         cover.classList.remove("is-exporting");
         cover.style.width = originalWidth;
@@ -4219,6 +4904,76 @@
         syncImageNow();
         applyFreeLayout();
       }
+    }
+
+    function composeExportCanvas(source, format) {
+      if (format === "cover") return source;
+      const ratio = exportRatios[format] || exportRatios.cover;
+      const canvas = document.createElement("canvas");
+      canvas.width = source.width;
+      canvas.height = Math.round(canvas.width / ratio);
+      const context = canvas.getContext("2d");
+      context.fillStyle = format === "wallpaper" ? "#050609" : "#111318";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      const scale = Math.min(canvas.width / source.width, canvas.height / source.height);
+      const width = source.width * scale;
+      const height = source.height * scale;
+      context.drawImage(source, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+      return canvas;
+    }
+
+    function downloadCanvas(canvas, suffix) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("PNGを作成できませんでした"));
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          const name = $("nameInput").value.trim().replace(/[\\/:*?"<>|]+/g, "-") || "magazine-card";
+          a.download = `${name}-${suffix}.png`;
+          a.href = url;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          resolve();
+        }, "image/png");
+      });
+    }
+
+    async function exportFormats(formats) {
+      setStatus("保存機能を準備中...");
+      let source;
+      try {
+        source = await captureCoverCanvas();
+        for (const format of formats) {
+          const output = composeExportCanvas(source, format);
+          await downloadCanvas(output, format);
+          if (output !== source) {
+            output.width = 1;
+            output.height = 1;
+          }
+        }
+        setStatus(`${formats.length}種類のPNGを書き出しました`);
+      } catch (error) {
+        console.error(error);
+        setStatus("書き出しに失敗しました");
+      } finally {
+        if (source) {
+          source.width = 1;
+          source.height = 1;
+        }
+      }
+    }
+
+    $("downloadBtn").addEventListener("click", () => {
+      exportFormats([$("exportFormatSelect").value]);
+    });
+
+    $("batchExportBtn").addEventListener("click", () => {
+      exportFormats(["cover", "square", "portrait", "story", "wallpaper"]);
     });
 
     renderPalettes();
@@ -4235,6 +4990,8 @@
     applyTextColors();
     applyTextSizes();
     syncLogo();
+    applyTextEffects();
+    renderStickers();
     applyVisibility();
     syncImage();
     document.fonts.ready.then(applyFreeLayout);
