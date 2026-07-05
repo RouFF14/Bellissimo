@@ -2327,9 +2327,9 @@
       </section>
 
       <section class="section" id="freeLayoutSection">
-        <div class="section-title">フリースタイル配置</div>
+        <div class="section-title">文字配置</div>
         <div class="field">
-          <label for="freeElementSelect">移動する文字要素</label>
+          <label for="freeElementSelect">編集する文字要素</label>
           <select id="freeElementSelect">
             <option value="issue">発行情報</option>
             <option value="title">表紙タイトル</option>
@@ -2350,6 +2350,15 @@
             <option value="vertical-lr">縦書き・左から</option>
             <option value="diagonal-up">斜め・右上がり</option>
             <option value="diagonal-down">斜め・右下がり</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="freeAlignSelect">文字揃え</label>
+          <select id="freeAlignSelect">
+            <option value="auto">スタイル設定</option>
+            <option value="left">左揃え</option>
+            <option value="center">中央揃え</option>
+            <option value="right">右揃え</option>
           </select>
         </div>
         <div class="range-row">
@@ -2377,7 +2386,7 @@
           <input id="freeRotateRange" type="range" min="-180" max="180" step="1" value="0">
           <span id="freeRotateValue">0°</span>
         </div>
-        <div class="hint">フリースタイル選択中は、表紙上の文字を直接ドラッグできます。</div>
+        <div class="hint">文字揃えは全スタイルで使用できます。フリースタイル選択中は、表紙上の文字を直接ドラッグできます。</div>
       </section>
 
       <section class="section" id="imageControlsSection">
@@ -2666,6 +2675,7 @@
       state.direction = "horizontal";
       state.rotation = 0;
       state.scale = 1;
+      state.align = "auto";
     });
 
     function createFreeLayoutPreset(index, feminine) {
@@ -3084,6 +3094,13 @@
         element.style.writingMode = enabled
           ? (state.direction === "vertical-rl" || state.direction === "vertical-lr" ? state.direction : "horizontal-tb")
           : "";
+        const textAlign = state.align && state.align !== "auto" ? state.align : "";
+        element.style.textAlign = textAlign;
+        if (key === "topics" || key === "meta") {
+          element.style.justifyContent = textAlign === "center"
+            ? "center"
+            : (textAlign === "right" ? "flex-end" : (textAlign === "left" ? "flex-start" : ""));
+        }
         applyFreeFontScale(key, element, state.scale, enabled);
         if (enabled) {
           const left = (state.x / 100) * layerWidth - element.offsetWidth / 2;
@@ -3092,7 +3109,7 @@
           element.style.setProperty("--free-top", `${top}px`);
         }
       });
-      ["freeElementSelect", "freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeScaleRange", "freeRotateRange"].forEach((id) => {
+      ["freeDirectionSelect", "freeXRange", "freeYRange", "freeWidthRange", "freeScaleRange", "freeRotateRange"].forEach((id) => {
         $(id).disabled = !enabled;
       });
       const selected = freeLayoutState[selectedFreeElement];
@@ -3102,6 +3119,7 @@
       $("freeWidthRange").value = selected.width;
       $("freeScaleRange").value = selected.scale;
       $("freeDirectionSelect").value = selected.direction;
+      $("freeAlignSelect").value = selected.align || "auto";
       $("freeRotateRange").value = selected.rotation;
       $("freeXValue").textContent = Math.round(selected.x);
       $("freeYValue").textContent = Math.round(selected.y);
@@ -3644,6 +3662,11 @@
     $("freeDirectionSelect").addEventListener("change", (event) => {
       if (!isFreeLayoutCategory()) return;
       freeLayoutState[selectedFreeElement].direction = event.target.value;
+      applyFreeLayout();
+    });
+
+    $("freeAlignSelect").addEventListener("change", (event) => {
+      freeLayoutState[selectedFreeElement].align = event.target.value;
       applyFreeLayout();
     });
 
