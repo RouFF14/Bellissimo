@@ -6,8 +6,7 @@
   <title>Aether Cover Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bebas+Neue&family=Bodoni+Moda:wght@500;700;900&family=Caveat:wght@600;700&family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:wght@600;700&family=Delius&family=Hachi+Maru+Pop&family=Inter:wght@400;500;600;700;800&family=Kosugi+Maru&family=Libre+Baskerville:wght@700&family=Lobster&family=M+PLUS+Rounded+1c:wght@500;700;900&family=Noto+Serif+JP:wght@500;700;900&family=Orbitron:wght@700;900&family=Oswald:wght@600;700&family=Pacifico&family=Playfair+Display:wght@700;900&family=Quicksand:wght@600;700&family=Rajdhani:wght@700&family=Yomogi&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=M+PLUS+Rounded+1c:wght@500;700;900&family=Noto+Serif+JP:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #111318;
@@ -2918,7 +2917,7 @@
       setText("quoteInput", "quoteOutput");
       syncActiveTime();
       syncJobs();
-      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
+      if (isFreeLayoutCategory()) requestFreeLayout();
     }
 
     function setupActiveTimeSelects() {
@@ -3067,6 +3066,15 @@
         syncProfile();
       }
       applyFreeLayout();
+    }
+
+    let freeLayoutFrame = 0;
+    function requestFreeLayout() {
+      if (freeLayoutFrame) return;
+      freeLayoutFrame = requestAnimationFrame(() => {
+        freeLayoutFrame = 0;
+        applyFreeLayout();
+      });
     }
 
     function applyFreeLayout() {
@@ -3218,6 +3226,7 @@
           const picture = document.createElement("img");
           picture.alt = "";
           picture.draggable = false;
+          picture.decoding = "async";
           viewport.appendChild(picture);
           layer.appendChild(viewport);
         }
@@ -3245,7 +3254,16 @@
       });
     }
 
+    let syncImageFrame = 0;
     function syncImage() {
+      if (syncImageFrame) return;
+      syncImageFrame = requestAnimationFrame(() => {
+        syncImageFrame = 0;
+        syncImageNow();
+      });
+    }
+
+    function syncImageNow() {
       if (currentImageIndex >= 0 && uploadedImages[currentImageIndex]) {
         uploadedImages[currentImageIndex].state = { ...imageState };
       }
@@ -3362,7 +3380,7 @@
       $(`${key}Range`).value = value;
       $(`${key}Number`).value = value;
       root.style.setProperty(config.cssVar, `${value}px`);
-      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
+      if (isFreeLayoutCategory()) requestFreeLayout();
     }
 
     function applyTextSizes() {
@@ -3382,6 +3400,8 @@
         const preview = document.createElement("img");
         preview.alt = "";
         preview.src = image.src;
+        preview.loading = "lazy";
+        preview.decoding = "async";
         const badge = document.createElement("span");
         badge.className = "image-thumb-badge";
         badge.textContent = index === 0 ? "背景" : String(index + 1);
@@ -3447,6 +3467,45 @@
       applyVisibility();
     }
 
+    const fontQueries = {
+      "Bebas Neue": "Bebas+Neue",
+      "Anton": "Anton",
+      "Archivo Black": "Archivo+Black",
+      "Oswald": "Oswald:wght@600;700",
+      "Orbitron": "Orbitron:wght@700;900",
+      "Rajdhani": "Rajdhani:wght@700",
+      "Playfair Display": "Playfair+Display:wght@700;900",
+      "Bodoni Moda": "Bodoni+Moda:wght@500;700;900",
+      "Libre Baskerville": "Libre+Baskerville:wght@700",
+      "Pacifico": "Pacifico",
+      "Lobster": "Lobster",
+      "Caveat": "Caveat:wght@600;700",
+      "Yomogi": "Yomogi",
+      "Kosugi Maru": "Kosugi+Maru",
+      "Hachi Maru Pop": "Hachi+Maru+Pop",
+      "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700;900",
+      "Delius": "Delius",
+      "Quicksand": "Quicksand:wght@600;700"
+    };
+    const fontLoadPromises = new Map();
+
+    function ensureFontLoaded(fontValue) {
+      const family = fontValue.split(",")[0].replace(/['"]/g, "").trim();
+      const query = fontQueries[family];
+      if (!query) return Promise.resolve();
+      if (fontLoadPromises.has(family)) return fontLoadPromises.get(family);
+      const promise = new Promise((resolve) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `https://fonts.googleapis.com/css2?family=${query}&display=swap`;
+        link.onload = resolve;
+        link.onerror = resolve;
+        document.head.appendChild(link);
+      });
+      fontLoadPromises.set(family, promise);
+      return promise;
+    }
+
     function setupFontSelects() {
       ["nameFontSelect", "bodyFontSelect"].forEach((id) => {
         $(id).innerHTML = $("titleFontSelect").innerHTML;
@@ -3457,10 +3516,13 @@
     }
 
     function applyFonts() {
-      root.style.setProperty("--title-font-family", $("titleFontSelect").value);
-      root.style.setProperty("--name-font-family", $("nameFontSelect").value);
-      root.style.setProperty("--body-font-family", $("bodyFontSelect").value);
-      if (isFreeLayoutCategory()) requestAnimationFrame(applyFreeLayout);
+      const values = [$("titleFontSelect").value, $("nameFontSelect").value, $("bodyFontSelect").value];
+      root.style.setProperty("--title-font-family", values[0]);
+      root.style.setProperty("--name-font-family", values[1]);
+      root.style.setProperty("--body-font-family", values[2]);
+      Promise.all(values.map(ensureFontLoaded))
+        .then(() => document.fonts.ready)
+        .then(requestFreeLayout);
     }
 
     function applyVisibility() {
@@ -3673,14 +3735,14 @@
     $("freeRotateRange").addEventListener("input", (event) => {
       if (!isFreeLayoutCategory()) return;
       freeLayoutState[selectedFreeElement].rotation = Number(event.target.value);
-      applyFreeLayout();
+      requestFreeLayout();
     });
 
     [["freeXRange", "x"], ["freeYRange", "y"], ["freeWidthRange", "width"], ["freeScaleRange", "scale"]].forEach(([id, key]) => {
       $(id).addEventListener("input", (event) => {
         if (!isFreeLayoutCategory()) return;
         freeLayoutState[selectedFreeElement][key] = Number(event.target.value);
-        applyFreeLayout();
+        requestFreeLayout();
       });
     });
 
@@ -3842,7 +3904,7 @@
       const sourceUrl = URL.createObjectURL(file);
       try {
         const source = await loadImageSource(sourceUrl);
-        const maxDimension = 2400;
+        const maxDimension = 2200;
         const scale = Math.min(1, maxDimension / Math.max(source.naturalWidth, source.naturalHeight));
         const width = Math.max(1, Math.round(source.naturalWidth * scale));
         const height = Math.max(1, Math.round(source.naturalHeight * scale));
@@ -3850,7 +3912,9 @@
         canvas.width = width;
         canvas.height = height;
         canvas.getContext("2d", { alpha: true }).drawImage(source, 0, 0, width, height);
-        const optimizedBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.9));
+        const optimizedBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.88));
+        canvas.width = 1;
+        canvas.height = 1;
         return {
           id: String(nextImageId++),
           name: file.name,
@@ -4053,7 +4117,7 @@
         const rect = cover.getBoundingClientRect();
         freeLayoutState[selectedFreeElement].x = Math.max(0, Math.min(100, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
         freeLayoutState[selectedFreeElement].y = Math.max(0, Math.min(100, drag.y + ((event.clientY - drag.startY) / rect.height) * 100));
-        applyFreeLayout();
+        requestFreeLayout();
         return;
       }
       imageState.x = Math.max(-260, Math.min(260, drag.x + event.clientX - drag.startX));
@@ -4067,7 +4131,7 @@
     cover.addEventListener("lostpointercapture", clearPointerDrag);
     window.addEventListener("resize", () => {
       syncImage();
-      applyFreeLayout();
+      requestFreeLayout();
     });
     window.addEventListener("beforeunload", () => {
       uploadedImages.forEach((image) => {
@@ -4095,20 +4159,39 @@
       setStatus("スタイルをシャッフルしました");
     });
 
+    let html2CanvasPromise;
+    function ensureHtml2Canvas() {
+      if (window.html2canvas) return Promise.resolve(window.html2canvas);
+      if (html2CanvasPromise) return html2CanvasPromise;
+      html2CanvasPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+        script.async = true;
+        script.onload = () => resolve(window.html2canvas);
+        script.onerror = () => reject(new Error("PNG保存機能を読み込めませんでした"));
+        document.head.appendChild(script);
+      });
+      return html2CanvasPromise;
+    }
+
     $("downloadBtn").addEventListener("click", async () => {
-      setStatus("書き出し中...");
+      setStatus("保存機能を準備中...");
       const originalWidth = cover.style.width;
       const originalHeight = cover.style.height;
       try {
+        const captureCover = await ensureHtml2Canvas();
+        const fontValues = [$("titleFontSelect").value, $("nameFontSelect").value, $("bodyFontSelect").value];
+        await Promise.all(fontValues.map(ensureFontLoaded));
+        setStatus("書き出し中...");
         cover.classList.add("is-exporting");
         const currentRect = cover.getBoundingClientRect();
         cover.style.width = `${currentRect.width}px`;
         cover.style.height = `${currentRect.height}px`;
-        syncImage();
+        syncImageNow();
         await document.fonts.ready;
         applyFreeLayout();
         await new Promise((resolve) => requestAnimationFrame(resolve));
-        const canvas = await html2canvas(cover, {
+        const canvas = await captureCover(cover, {
           scale: Number($("exportQualitySelect").value || 3),
           backgroundColor: null,
           useCORS: true,
@@ -4133,7 +4216,7 @@
         cover.classList.remove("is-exporting");
         cover.style.width = originalWidth;
         cover.style.height = originalHeight;
-        syncImage();
+        syncImageNow();
         applyFreeLayout();
       }
     });
