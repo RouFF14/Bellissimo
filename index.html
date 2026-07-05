@@ -2451,12 +2451,12 @@
         </div>
         <div class="range-row">
           <span>X</span>
-          <input id="freeXRange" type="range" min="0" max="100" step="1" value="50">
+          <input id="freeXRange" type="range" min="-500" max="500" step="1" value="50">
           <span id="freeXValue">50</span>
         </div>
         <div class="range-row">
           <span>Y</span>
-          <input id="freeYRange" type="range" min="0" max="100" step="1" value="50">
+          <input id="freeYRange" type="range" min="-500" max="500" step="1" value="50">
           <span id="freeYValue">50</span>
         </div>
         <div class="range-row">
@@ -2576,12 +2576,12 @@
         </div>
         <div class="range-row">
           <span>X</span>
-          <input id="xRange" type="range" min="-260" max="260" step="1" value="0">
+          <input id="xRange" type="range" min="-500" max="500" step="1" value="0">
           <span id="xValue">0</span>
         </div>
         <div class="range-row">
           <span>Y</span>
-          <input id="yRange" type="range" min="-260" max="260" step="1" value="0">
+          <input id="yRange" type="range" min="-500" max="500" step="1" value="0">
           <span id="yValue">0</span>
         </div>
         <div class="range-row">
@@ -4808,13 +4808,13 @@
       }
       if (drag.type === "free") {
         const rect = cover.getBoundingClientRect();
-        freeLayoutState[selectedFreeElement].x = Math.max(0, Math.min(100, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
-        freeLayoutState[selectedFreeElement].y = Math.max(0, Math.min(100, drag.y + ((event.clientY - drag.startY) / rect.height) * 100));
+        freeLayoutState[selectedFreeElement].x = Math.max(-500, Math.min(500, drag.x + ((event.clientX - drag.startX) / rect.width) * 100));
+        freeLayoutState[selectedFreeElement].y = Math.max(-500, Math.min(500, drag.y + ((event.clientY - drag.startY) / rect.height) * 100));
         requestFreeLayout();
         return;
       }
-      imageState.x = Math.max(-260, Math.min(260, drag.x + event.clientX - drag.startX));
-      imageState.y = Math.max(-260, Math.min(260, drag.y + event.clientY - drag.startY));
+      imageState.x = Math.max(-500, Math.min(500, drag.x + event.clientX - drag.startX));
+      imageState.y = Math.max(-500, Math.min(500, drag.y + event.clientY - drag.startY));
       syncImage();
     });
 
