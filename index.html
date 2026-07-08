@@ -122,6 +122,19 @@
 
     .icon-button:hover, .primary-button:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.48); }
     .icon-button svg, .primary-button svg { width: 18px; height: 18px; stroke-width: 2.2; }
+    .upload-button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      cursor: pointer;
+      font-weight: 800;
+      text-align: center;
+    }
 
     .panel {
       border: 1px solid var(--line);
@@ -2067,8 +2080,6 @@
         <div class="field">
           <label for="styleCategorySelect">スタイル分類</label>
           <select id="styleCategorySelect">
-            <option value="mens">メンズ / 30</option>
-            <option value="ladies">レディース / 30</option>
             <option value="freeMens">フリー メンズ / 30</option>
             <option value="freeLadies">フリー レディース / 30</option>
           </select>
@@ -2229,7 +2240,7 @@
           <select id="nameFontSelect"></select>
         </div>
         <div class="field">
-          <label for="bodyFontSelect">本文・ジョブ・トピック</label>
+          <label for="bodyFontSelect">本文・単語・トピック</label>
           <select id="bodyFontSelect"></select>
         </div>
       </section>
@@ -2241,7 +2252,7 @@
           <label class="toggle-chip"><input type="checkbox" id="showMagazine" checked>表紙タイトル</label>
           <label class="toggle-chip"><input type="checkbox" id="showArchive" checked>サブタイトル</label>
           <label class="toggle-chip"><input type="checkbox" id="showTopics" checked>トピック</label>
-          <label class="toggle-chip"><input type="checkbox" id="showJob" checked>ジョブ欄</label>
+          <label class="toggle-chip"><input type="checkbox" id="showJob" checked>単語欄</label>
           <label class="toggle-chip"><input type="checkbox" id="showActiveTime" checked>活動時間</label>
           <label class="toggle-chip"><input type="checkbox" id="showHeadline" checked>キャッチコピー</label>
           <label class="toggle-chip"><input type="checkbox" id="showName" checked>名前</label>
@@ -2267,11 +2278,11 @@
             <input type="color" id="topicColor" value="#fff8ed">
           </label>
           <label class="color-control">
-            <span>ジョブ見出し</span>
+            <span>単語見出し</span>
             <input type="color" id="labelColor" value="#ff4f7b">
           </label>
           <label class="color-control">
-            <span>ジョブ名</span>
+            <span>メイン単語</span>
             <input type="color" id="jobColor" value="#fff8ed">
           </label>
           <label class="color-control">
@@ -2312,7 +2323,7 @@
             <input type="number" id="topicSizeNumber" min="8" max="36" step="1" value="11">
           </label>
           <label class="size-control">
-            <span>ジョブ名</span>
+            <span>メイン単語</span>
             <input type="range" id="jobSizeRange" min="12" max="72" step="1" value="32">
             <input type="number" id="jobSizeNumber" min="12" max="72" step="1" value="32">
           </label>
@@ -2363,13 +2374,17 @@
         </div>
         <div class="two">
           <div class="field">
-            <label for="mainJobSelect">メインジョブ</label>
-            <select id="mainJobSelect"></select>
+            <label for="keywordInput">好きな単語</label>
+            <input id="keywordInput" type="text" value="Astrologian" maxlength="32">
           </div>
           <div class="field">
             <label for="issueInput">発行情報</label>
             <input id="issueInput" type="text" value="JUN 2026 / VOL. XIV" maxlength="28">
           </div>
+        </div>
+        <div class="field">
+          <label for="keywordSubInput">単語の小見出し</label>
+          <input id="keywordSubInput" type="text" value="" maxlength="48" placeholder="例：RP HOST CLUB / CAFE STAFF">
         </div>
         <div class="field">
           <label for="subtitleInput">キャッチコピー</label>
@@ -2395,18 +2410,7 @@
             <select id="activeEndSelect"></select>
           </div>
         </div>
-        <div class="hint">表紙のジョブ欄に「Active Time」として表示されます。</div>
-      </section>
-
-      <section class="section">
-        <div class="job-header">
-          <div class="section-title">サブジョブ <span id="subJobCount">0</span></div>
-          <label class="language-toggle" for="jobEnglishToggle">
-            <input id="jobEnglishToggle" type="checkbox">
-            English ver.
-          </label>
-        </div>
-        <div class="job-board" id="subJobBoard"></div>
+        <div class="hint">表紙の単語欄に「Active Time」として表示されます。</div>
       </section>
 
       <section class="section">
@@ -2423,7 +2427,7 @@
             <option value="title">表紙タイトル</option>
             <option value="archive">サブタイトル</option>
             <option value="topics">トピック</option>
-            <option value="job">ジョブ欄</option>
+            <option value="job">単語欄</option>
             <option value="headline">キャッチコピー</option>
             <option value="name">名前</option>
             <option value="meta">ワールド</option>
@@ -2653,8 +2657,11 @@
         </div>
         <input id="replaceImageInput" type="file" accept="image/*" hidden>
         <div class="two">
-          <button id="replaceImageBtn" type="button">選択画像を入れ替え</button>
+          <label class="upload-button" for="imageInput">画像を追加</label>
           <button id="removeImageBtn" type="button">選択画像を削除</button>
+        </div>
+        <div class="two">
+          <button id="replaceImageBtn" type="button">選択画像を入れ替え</button>
         </div>
         <div class="hint">表紙上の追加画像は直接ドラッグできます。ホイールで拡大・縮小できます。</div>
       </section>
@@ -2733,7 +2740,7 @@
             <div class="cover-mid">
               <div class="topics" id="topicsOutput"></div>
               <div class="side-copy" id="jobPanel">
-                <div class="role-label">Main Job</div>
+                <div class="role-label">Keyword</div>
                 <div class="job-name" id="jobOutput">Astrologian</div>
                 <div class="sub-jobs" id="subJobsOutput"></div>
                 <div class="active-time" id="activeTimeOutput"><span class="active-time-label">Active Time</span>18:00–24:00</div>
@@ -2836,12 +2843,10 @@
     }
 
     const coverStyles = {
-      mens: buildStylePresets(mensStyleNames, "mens", mensLayouts),
-      ladies: buildStylePresets(ladiesStyleNames, "ladies", ladiesLayouts),
       freeMens: buildFreeStylePresets(mensStyleNames, "freeMens", mensLayouts, false),
       freeLadies: buildFreeStylePresets(ladiesStyleNames, "freeLadies", ladiesLayouts, true)
     };
-    let currentStyleCategory = "mens";
+    let currentStyleCategory = "freeMens";
     const freeElements = {
       issue: "issueOutput",
       title: "magazineOutput",
@@ -2981,63 +2986,6 @@
 
     const topics = ["SS撮影", "ミラプリ", "ハウジング", "地図", "レイド", "フレンド募集", "クラフター", "ギャザラー", "PvP", "ロールプレイ", "絶", "零式"];
     let selectedTopics = ["SS撮影", "ミラプリ", "ハウジング", "地図"];
-    const jobGroups = [
-      {
-        role: "Tank",
-        jobs: [
-          { code: "PLD", ja: "ナ", full: "Paladin" },
-          { code: "WAR", ja: "戦", full: "Warrior" },
-          { code: "DRK", ja: "暗", full: "Dark Knight" },
-          { code: "GNB", ja: "ガンブレ", full: "Gunbreaker" }
-        ]
-      },
-      {
-        role: "Healer",
-        jobs: [
-          { code: "WHM", ja: "白", full: "White Mage" },
-          { code: "SCH", ja: "学", full: "Scholar" },
-          { code: "AST", ja: "占", full: "Astrologian" },
-          { code: "SGE", ja: "賢", full: "Sage" }
-        ]
-      },
-      {
-        role: "DPS",
-        jobs: [
-          { code: "MNK", ja: "モ", full: "Monk" },
-          { code: "DRG", ja: "竜", full: "Dragoon" },
-          { code: "NIN", ja: "忍", full: "Ninja" },
-          { code: "SAM", ja: "侍", full: "Samurai" },
-          { code: "RPR", ja: "リーパー", full: "Reaper" },
-          { code: "VPR", ja: "ヴァイパー", full: "Viper" },
-          { code: "BRD", ja: "詩", full: "Bard" },
-          { code: "MCH", ja: "機", full: "Machinist" },
-          { code: "DNC", ja: "踊", full: "Dancer" },
-          { code: "BLM", ja: "黒魔", full: "Black Mage" },
-          { code: "SMN", ja: "召", full: "Summoner" },
-          { code: "RDM", ja: "赤魔", full: "Red Mage" },
-          { code: "PCT", ja: "ピクト", full: "Pictomancer" }
-        ]
-      },
-      {
-        role: "Hand / Land",
-        jobs: [
-          { code: "CRP", ja: "木工", full: "Carpenter" },
-          { code: "BSM", ja: "鍛冶", full: "Blacksmith" },
-          { code: "ARM", ja: "甲冑", full: "Armorer" },
-          { code: "GSM", ja: "彫金", full: "Goldsmith" },
-          { code: "LWR", ja: "革", full: "Leatherworker" },
-          { code: "WVR", ja: "裁縫", full: "Weaver" },
-          { code: "ALC", ja: "錬金", full: "Alchemist" },
-          { code: "CUL", ja: "調理", full: "Culinarian" },
-          { code: "MIN", ja: "採掘", full: "Miner" },
-          { code: "BTN", ja: "園芸", full: "Botanist" },
-          { code: "FSH", ja: "漁師", full: "Fisher" }
-        ]
-      }
-    ];
-    const allJobs = jobGroups.flatMap((group) => group.jobs);
-    let selectedMainJob = "AST";
-    let selectedSubJobs = [];
     let uploadedImages = [];
     let nextImageId = 1;
     let currentImageIndex = -1;
@@ -3286,7 +3234,7 @@
       setStatus("人物位置を解析中...");
       const image = await loadImageSource(background.src);
       const focus = await analyzeImageFocus(image);
-      const feminine = currentStyleCategory === "ladies" || currentStyleCategory === "freeLadies";
+      const feminine = currentStyleCategory === "freeLadies";
       const styles = coverStyles[feminine ? "freeLadies" : "freeMens"];
       const currentIndex = Math.max(0, Number(($("styleSelect").value.match(/(\d+)$/) || [0, 1])[1]) - 1);
       currentStyleCategory = feminine ? "freeLadies" : "freeMens";
@@ -3434,77 +3382,11 @@
       $("activeTimeOutput").innerHTML = `<span class="active-time-label">Active Time</span>${start}–${end}`;
     }
 
-    function isEnglishJobs() {
-      return $("jobEnglishToggle").checked;
-    }
-
-    function getJob(code) {
-      return allJobs.find((job) => job.code === code);
-    }
-
-    function jobLabel(job) {
-      return isEnglishJobs() ? job.code : job.ja;
-    }
-
-    function renderMainJobSelect() {
-      const select = $("mainJobSelect");
-      const current = selectedMainJob || select.value;
-      const placeholder = isEnglishJobs() ? "Select" : "Select (選択)";
-      select.innerHTML = `<option value="">${placeholder}</option>`;
-      jobGroups.forEach((group) => {
-        const optionGroup = document.createElement("optgroup");
-        optionGroup.label = group.role.toUpperCase();
-        group.jobs.forEach((job) => {
-          const option = document.createElement("option");
-          option.value = job.code;
-          option.textContent = jobLabel(job);
-          optionGroup.appendChild(option);
-        });
-        select.appendChild(optionGroup);
-      });
-      select.value = current;
-    }
-
-    function renderSubJobs() {
-      const board = $("subJobBoard");
-      board.innerHTML = "";
-      jobGroups.forEach((group) => {
-        const roleBlock = document.createElement("div");
-        roleBlock.className = "job-role";
-        roleBlock.innerHTML = `<div class="job-role-title">${group.role}</div>`;
-        const chipGrid = document.createElement("div");
-        chipGrid.className = "job-chip-grid";
-        group.jobs.forEach((job) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "chip" + (selectedSubJobs.includes(job.code) ? " is-active" : "");
-          btn.textContent = jobLabel(job);
-          btn.title = job.full;
-          btn.addEventListener("click", () => {
-            if (selectedSubJobs.includes(job.code)) {
-              selectedSubJobs = selectedSubJobs.filter((code) => code !== job.code);
-            } else {
-              selectedSubJobs.push(job.code);
-            }
-            renderSubJobs();
-            syncJobs();
-          });
-          chipGrid.appendChild(btn);
-        });
-        roleBlock.appendChild(chipGrid);
-        board.appendChild(roleBlock);
-      });
-      $("subJobCount").textContent = selectedSubJobs.length;
-    }
-
     function syncJobs() {
-      const mainJob = getJob(selectedMainJob);
-      $("jobOutput").textContent = mainJob ? mainJob.full : "Select Job";
-      const labels = selectedSubJobs.map((code) => {
-        const job = getJob(code);
-        return job ? jobLabel(job) : code;
-      });
-      $("subJobsOutput").textContent = labels.length ? `Sub Jobs / ${labels.join("  ")}` : "";
+      const keyword = $("keywordInput").value.trim();
+      const subKeyword = $("keywordSubInput").value.trim();
+      $("jobOutput").textContent = keyword || " ";
+      $("subJobsOutput").textContent = subKeyword;
     }
 
     function renderPalettes() {
@@ -4039,7 +3921,7 @@
     }
 
     function collectPreset() {
-      const textInputs = ["magazineInput", "archiveInput", "nameInput", "worldInput", "issueInput", "subtitleInput", "quoteInput"];
+      const textInputs = ["magazineInput", "archiveInput", "nameInput", "worldInput", "keywordInput", "keywordSubInput", "issueInput", "subtitleInput", "quoteInput"];
       const colors = Object.fromEntries(Object.keys(textColorControls).map((id) => [id, $(id).value]));
       const sizes = Object.fromEntries(Object.keys(textSizeControls).map((key) => [key, $(`${key}Number`).value]));
       const visibility = Object.fromEntries(Object.keys(visibilityTargets).map((id) => [id, $(id).checked]));
@@ -4051,10 +3933,9 @@
         fit: $("fitSelect").value,
         theme: $("themeSelect").value,
         filter: $("filterSelect").value,
-        mainJob: selectedMainJob,
-        subJobs: selectedSubJobs,
+        keyword: $("keywordInput").value,
+        keywordSub: $("keywordSubInput").value,
         topics: selectedTopics,
-        jobEnglish: $("jobEnglishToggle").checked,
         activeTime: {
           start: $("activeStartSelect").value,
           end: $("activeEndSelect").value
@@ -4085,9 +3966,12 @@
     function applyPreset(data) {
       if (!data || typeof data !== "object") return;
       Object.entries(data.text || {}).forEach(([id, value]) => { if ($(id)) $(id).value = value; });
-      if (data.styleCategory && coverStyles[data.styleCategory]) {
-        currentStyleCategory = data.styleCategory;
-        $("styleCategorySelect").value = data.styleCategory;
+      if (data.styleCategory) {
+        const normalizedCategory = data.styleCategory === "ladies" ? "freeLadies"
+          : data.styleCategory === "mens" ? "freeMens"
+          : data.styleCategory;
+        if (coverStyles[normalizedCategory]) currentStyleCategory = normalizedCategory;
+        $("styleCategorySelect").value = currentStyleCategory;
         renderStyleOptions();
       }
       if (data.style && Array.from($("styleSelect").options).some((option) => option.value === data.style)) {
@@ -4096,10 +3980,11 @@
       if (data.fit) $("fitSelect").value = data.fit;
       if (data.theme) $("themeSelect").value = data.theme;
       if (data.filter) $("filterSelect").value = data.filter;
-      if (data.mainJob !== undefined) selectedMainJob = data.mainJob;
-      if (Array.isArray(data.subJobs)) selectedSubJobs = data.subJobs;
+      if (data.keyword !== undefined && $("keywordInput")) $("keywordInput").value = data.keyword;
+      if (data.keywordSub !== undefined && $("keywordSubInput")) $("keywordSubInput").value = data.keywordSub;
+      if (data.mainJob !== undefined && $("keywordInput")) $("keywordInput").value = data.mainJob;
+      if (Array.isArray(data.subJobs) && $("keywordSubInput")) $("keywordSubInput").value = data.subJobs.join(" / ");
       if (Array.isArray(data.topics)) selectedTopics = data.topics;
-      if (typeof data.jobEnglish === "boolean") $("jobEnglishToggle").checked = data.jobEnglish;
       if (data.activeTime) {
         if (data.activeTime.start) $("activeStartSelect").value = data.activeTime.start;
         if (data.activeTime.end) $("activeEndSelect").value = data.activeTime.end;
@@ -4141,8 +4026,6 @@
       cover.style.setProperty("--img-fit", $("fitSelect").value);
       cover.style.setProperty("--img-filter", $("filterSelect").value);
       applyCoverStyle($("styleSelect").value, false);
-      renderMainJobSelect();
-      renderSubJobs();
       renderTopics();
       syncTopics();
       syncProfile();
@@ -4404,15 +4287,11 @@
       syncImage();
     });
 
-    $("mainJobSelect").addEventListener("change", (event) => {
-      selectedMainJob = event.target.value;
-      syncJobs();
-    });
-
-    $("jobEnglishToggle").addEventListener("change", () => {
-      renderMainJobSelect();
-      renderSubJobs();
-      syncJobs();
+    ["keywordInput", "keywordSubInput"].forEach((id) => {
+      $(id).addEventListener("input", () => {
+        syncJobs();
+        if (isFreeLayoutCategory()) requestFreeLayout();
+      });
     });
 
     ["activeStartSelect", "activeEndSelect"].forEach((id) => {
@@ -4982,8 +4861,6 @@
     setupActiveTimeSelects();
     renderStyleOptions();
     applyCoverStyle($("styleSelect").value);
-    renderMainJobSelect();
-    renderSubJobs();
     renderTopics();
     syncTopics();
     syncProfile();
