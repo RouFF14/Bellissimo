@@ -4799,7 +4799,24 @@
       return canvas;
     }
 
-    function downloadCanvas(canvas, suffix) {
+    function sanitizeFileName(name) {
+      return (name || "")
+        .trim()
+        .replace(/[\\/:*?"<>|]+/g, "-")
+        .replace(/\s+/g, " ")
+        .replace(/[. ]+$/g, "")
+        || "magazine-card";
+    }
+
+    function askSaveFileName(formats) {
+      const currentName = sanitizeFileName($("nameInput").value || "magazine-card");
+      const suffix = formats.length === 1 ? `-${formats[0]}` : "";
+      const value = window.prompt("保存する画像の名前を入力してください", `${currentName}${suffix}`);
+      if (value === null) return null;
+      return sanitizeFileName(value.replace(/\.png$/i, ""));
+    }
+
+    function downloadCanvas(canvas, fileName, suffix, useSuffix) {
       return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
           if (!blob) {
@@ -4808,8 +4825,7 @@
           }
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          const name = $("nameInput").value.trim().replace(/[\\/:*?"<>|]+/g, "-") || "magazine-card";
-          a.download = `${name}-${suffix}.png`;
+          a.download = `${fileName}${useSuffix ? `-${suffix}` : ""}.png`;
           a.href = url;
           document.body.appendChild(a);
           a.click();
@@ -4821,13 +4837,18 @@
     }
 
     async function exportFormats(formats) {
+      const fileName = askSaveFileName(formats);
+      if (!fileName) {
+        setStatus("保存をキャンセルしました");
+        return;
+      }
       setStatus("保存機能を準備中...");
       let source;
       try {
         source = await captureCoverCanvas();
         for (const format of formats) {
           const output = composeExportCanvas(source, format);
-          await downloadCanvas(output, format);
+          await downloadCanvas(output, fileName, format, formats.length > 1);
           if (output !== source) {
             output.width = 1;
             output.height = 1;
